@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>离线预览：Google Scholar 个人主页结构</title>
+  <link rel="stylesheet" href="../src/content/badges.css">
+  <style>
+    body { font: 13px/1.4 Roboto, Arial, "PingFang SC", sans-serif; color: #222; margin: 24px; max-width: 900px; }
+    h1 { font-size: 16px; font-weight: 500; }
+    p.note { color: #666; font-size: 12px; }
+    #gsc_a_b { width: 100%; border-collapse: collapse; }
+    #gsc_a_b td { border-bottom: 1px solid #e0e0e0; padding: 8px 4px; vertical-align: top; }
+    .gsc_a_t { width: 78%; }
+    .gsc_a_at { color: #1a0dab; text-decoration: none; font-size: 13px; }
+    .gs_gray { color: #777; font-size: 12px; }
+    .gsc_a_c, .gsc_a_y { text-align: right; color: #777; width: 11%; }
+    /* ?bare=1：只留论文列表，用来生成 README 里的效果图 */
+    body.bare { margin: 12px 16px; }
+    body.bare h1, body.bare p.note, body.bare #gs_res_ccl_mid { display: none; }
+  </style>
+  <script>
+    if (new URLSearchParams(location.search).get('bare') === '1') {
+      document.documentElement.style.overflow = 'hidden';
+      document.addEventListener('DOMContentLoaded', () => document.body.classList.add('bare'));
+    }
+  </script>
+</head>
+<body>
+  <h1>离线预览：Google Scholar 个人主页结构</h1>
+  <p class="note">
+    这个页面复刻了 Scholar 个人主页的 DOM 结构，并用一套假的 <code>chrome.*</code> API 直接跑真实的 content script，
+    用来在不打开 Scholar 的情况下检查徽章渲染效果。需通过 <code>node tools/serve.mjs</code> 起的本地服务打开。
+  </p>
+  <p class="note">
+    下面都是真实论文，被引次数取自 Semantic Scholar（2026-07-28 查询）。Google Scholar 自己的计数通常更高，
+    这里只是为了让示意图里的数字不是编的。
+  </p>
+
+  <table id="gsc_a_b">
+    <tbody>
+      <!-- 期刊：CCF A + 中科院 TOP + 1 区 + EI + IF，徽章最全的一行 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Faster R-CNN: Towards real-time object detection with region proposal networks</a>
+          <div class="gs_gray">S Ren, K He, R Girshick, J Sun</div>
+          <div class="gs_gray">IEEE transactions on pattern analysis and machine intelligence 39 (6), 1137-1149<span class="gs_oph">, 2017</span></div>
+        </td>
+        <td class="gsc_a_c">74363</td>
+        <td class="gsc_a_y">2017</td>
+      </tr>
+      <!-- 期刊：CCF A 但中科院只有 4 区，正是这个扩展想帮人看清的情况 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Scikit-learn: Machine learning in Python</a>
+          <div class="gs_gray">F Pedregosa, G Varoquaux, A Gramfort, V Michel, B Thirion, ...</div>
+          <div class="gs_gray">Journal of machine learning research 12, 2825-2830<span class="gs_oph">, 2011</span></div>
+        </td>
+        <td class="gsc_a_c">92028</td>
+        <td class="gsc_a_y">2011</td>
+      </tr>
+      <!-- 会议：CCF + CORE 两套目录各自出徽章 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Deep residual learning for image recognition</a>
+          <div class="gs_gray">K He, X Zhang, S Ren, J Sun</div>
+          <div class="gs_gray">Proceedings of the IEEE conference on computer vision and pattern recognition, 770-778<span class="gs_oph">, 2016</span></div>
+        </td>
+        <td class="gsc_a_c">234778</td>
+        <td class="gsc_a_y">2016</td>
+      </tr>
+      <!-- 自定义标记：ML三大顶会 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">An image is worth 16x16 words: Transformers for image recognition at scale</a>
+          <div class="gs_gray">A Dosovitskiy, L Beyer, A Kolesnikov, D Weissenborn, X Zhai, ...</div>
+          <div class="gs_gray">International Conference on Learning Representations<span class="gs_oph">, 2021</span></div>
+        </td>
+        <td class="gsc_a_c">66859</td>
+        <td class="gsc_a_y">2021</td>
+      </tr>
+      <!-- 自定义标记：数据库四大；同时验证 SIGMOD 会议录的写法 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">The case for learned index structures</a>
+          <div class="gs_gray">T Kraska, A Beutel, EH Chi, J Dean, N Polyzotis</div>
+          <div class="gs_gray">Proceedings of the 2018 International Conference on Management of Data, 489-504<span class="gs_oph">, 2018</span></div>
+        </td>
+        <td class="gsc_a_c">1265</td>
+        <td class="gsc_a_y">2018</td>
+      </tr>
+      <!-- 预印本：单独标出平台名，不参与分级 -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Llama 2: Open foundation and fine-tuned chat models</a>
+          <div class="gs_gray">H Touvron, L Martin, K Stone, P Albert, A Almahairi, ...</div>
+          <div class="gs_gray">arXiv preprint arXiv:2307.09288<span class="gs_oph">, 2023</span></div>
+        </td>
+        <td class="gsc_a_c">17723</td>
+        <td class="gsc_a_y">2023</td>
+      </tr>
+      <!-- 被 Scholar 截断的出处：靠前导简称认出 ICASSP -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Librispeech: An ASR corpus based on public domain audio books</a>
+          <div class="gs_gray">V Panayotov, G Chen, D Povey, S Khudanpur</div>
+          <div class="gs_gray">ICASSP 2015-2015 IEEE International Conference on Acoustics, Speech and …<span class="gs_oph">, 2015</span></div>
+        </td>
+        <td class="gsc_a_c">8220</td>
+        <td class="gsc_a_y">2015</td>
+      </tr>
+      <!-- 被截断的会议全称：靠唯一前缀匹配认出 NAACL -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">BERT: Pre-training of deep bidirectional transformers for language understanding</a>
+          <div class="gs_gray">J Devlin, MW Chang, K Lee, K Toutanova</div>
+          <div class="gs_gray">Proceedings of the 2019 Conference of the North American Chapter of the …<span class="gs_oph">, 2019</span></div>
+        </td>
+        <td class="gsc_a_c">118477</td>
+        <td class="gsc_a_y">2019</td>
+      </tr>
+      <!-- 综合性期刊：没有 CCF，但有中科院分区和 IF -->
+      <tr class="gsc_a_tr">
+        <td class="gsc_a_t">
+          <a class="gsc_a_at">Highly accurate protein structure prediction with AlphaFold</a>
+          <div class="gs_gray">J Jumper, R Evans, A Pritzel, T Green, M Figurnov, O Ronneberger, ...</div>
+          <div class="gs_gray">Nature 596 (7873), 583-589<span class="gs_oph">, 2021</span></div>
+        </td>
+        <td class="gsc_a_c">37719</td>
+        <td class="gsc_a_y">2021</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h1 style="margin-top:36px">搜索结果结构</h1>
+  <p class="note">
+    复刻 <code>scholar.google.com/scholar?q=…</code> 的结构：<code>.gs_a</code> 用不换行空格包住的短横线
+    分成「作者 - 出处, 年份 - 站点」，但站点段可能缺失、刊名本身也可能带短横线。
+  </p>
+  <div id="gs_res_ccl_mid">
+    <!-- 标准三段 -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>Squeeze-and-excitation networks</a></h3>
+        <div class="gs_a">J Hu, L Shen, G Sun&nbsp;-&nbsp;IEEE transactions on pattern analysis and machine intelligence, 2019&nbsp;-&nbsp;ieeexplore.ieee.org</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 出处是链接（Scholar 常见） -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>Generative agents: Interactive simulacra of human behavior</a></h3>
+        <div class="gs_a">JS Park, J O'Brien, CJ Cai…&nbsp;-&nbsp;<a>Proceedings of the 36th annual ACM symposium on user interface software and technology</a>, 2023&nbsp;-&nbsp;dl.acm.org</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 预印本 -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>MemGPT: Towards LLMs as operating systems</a></h3>
+        <div class="gs_a">C Packer, S Wooders, K Lin, V Fang…&nbsp;-&nbsp;arXiv preprint arXiv:2310.08560, 2023&nbsp;-&nbsp;arxiv.org</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 没有站点段 -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>Reflexion: Language agents with verbal reinforcement learning</a></h3>
+        <div class="gs_a">N Shinn, F Cassano, A Gopinath…&nbsp;-&nbsp;Advances in neural information processing systems, 2023</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 刊名自带短横线 -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>Human-level control through deep reinforcement learning</a></h3>
+        <div class="gs_a">V Mnih, K Kavukcuoglu, D Silver…&nbsp;-&nbsp;Nature, 2015&nbsp;-&nbsp;nature.com</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 只有作者和年份（图书条目） -->
+    <div class="gs_r gs_or gs_scl">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>[图书] Deep learning</a></h3>
+        <div class="gs_a">I Goodfellow, Y Bengio, A Courville&nbsp;-&nbsp;2016&nbsp;-&nbsp;books.google.com</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="chrome-shim.js"></script>
+  <script src="../src/lib/settings.js"></script>
+  <script src="../src/lib/normalize.js"></script>
+  <script src="../src/lib/ranking.js"></script>
+  <script src="../src/content/scholar.js"></script>
+</body>
+</html>

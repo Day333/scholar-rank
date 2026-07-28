@@ -1,0 +1,37 @@
+{
+  "comment": "自定义标记：命中后在所有徽章最前面单独出一个。ccf / core 填对应目录里的简称，names 填出处全称（归一化后匹配，用来兜住两套目录都没收的会议）。cls 可选 sr-tag-rose / sr-tag-bronze / sr-tag-amber / sr-tag-violet / sr-tag-slate，样式见 src/content/badges.css。",
+  "groups": [
+    {
+      "id": "ml-top3",
+      "label": "ML三大顶会",
+      "desc": "NeurIPS / ICML / ICLR",
+      "cls": "sr-tag-rose",
+      "ccf": ["NeurIPS", "ICML", "ICLR"],
+      "core": ["NeurIPS", "ICML", "ICLR"],
+      "names": [
+        "Advances in Neural Information Processing Systems",
+        "Conference on Neural Information Processing Systems",
+        "Annual Conference on Neural Information Processing Systems",
+        "International Conference on Machine Learning",
+        "International Conference on Learning Representations"
+      ]
+    },
+    {
+      "id": "db-top4",
+      "label": "数据库四大",
+      "desc": "SIGMOD / VLDB / ICDE / PODS",
+      "cls": "sr-tag-bronze",
+      "ccf": ["SIGMOD", "VLDB", "ICDE", "PODS"],
+      "core": ["SIGMOD", "VLDB", "ICDE", "PODS"],
+      "names": [
+        "ACM SIGMOD International Conference on Management of Data",
+        "International Conference on Management of Data",
+        "Proceedings of the ACM on Management of Data",
+        "International Conference on Very Large Data Bases",
+        "Proceedings of the VLDB Endowment",
+        "IEEE International Conference on Data Engineering",
+        "ACM SIGMOD-SIGACT-SIGAI Symposium on Principles of Database Systems"
+      ]
+    }
+  ]
+}

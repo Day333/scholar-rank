@@ -1,0 +1,17 @@
+{
+  "name": "scholar-rank",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome 扩展：在 Google Scholar 个人主页显示 CCF 分级、中科院分区、SCI/EI 收录与影响因子",
+  "type": "module",
+  "scripts": {
+    "build": "npm run build:ccf && npm run build:core && npm run build:journals && npm run build:icons",
+    "build:ccf": "node tools/build-ccf.mjs",
+    "build:core": "node tools/build-core.mjs",
+    "build:journals": "node tools/build-journals.mjs",
+    "build:icons": "node tools/make-icons.mjs",
+    "test": "node tools/selftest.mjs",
+    "probe": "node tools/lookup.mjs",
+    "serve": "node tools/serve.mjs"
+  }
+}

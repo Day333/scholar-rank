@@ -1,0 +1,167 @@
+/*
+ * 分级徽章样式。
+ *
+ * 分成两层：
+ *   1. 每种徽章只负责声明两个颜色变量 —— --sr-tint（浅色底）和 --sr-key（主色）；
+ *   2. 外观风格 .sr-theme-* 决定这两个变量怎么用（填充 / 描边 / 实心 / 纯文字…）。
+ * 加新风格时只要写一段 .sr-theme-xxx 规则，不用碰任何一种徽章的配色。
+ */
+
+.sr-badges {
+  display: block;
+  margin: 2px 0 1px;
+  line-height: 1.6;
+  font-size: 11px;
+  font-family: Roboto, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.sr-badges .sr-badge {
+  display: inline-block;
+  margin: 1px 4px 1px 0;
+  padding: 1px 7px;
+  border: 0;
+  border-radius: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: default;
+  --sr-tint: #eceff1;
+  --sr-key: #37474f;
+  background: var(--sr-tint);
+  color: var(--sr-key);
+}
+
+.sr-badges.sr-bold .sr-badge { font-weight: 700; }
+
+/* ---------- 各类徽章的配色 ---------- */
+
+/* CCF 分级 */
+.sr-badges .sr-ccf-a { --sr-tint: #fbdedb; --sr-key: #b3261e; }
+.sr-badges .sr-ccf-b { --sr-tint: #fdeacd; --sr-key: #8a5200; }
+.sr-badges .sr-ccf-c { --sr-tint: #dde9fb; --sr-key: #1a4f9c; }
+
+/* 预印本：中性灰蓝，读起来是「还没评审」而不是「级别高低」 */
+.sr-badges .sr-preprint { --sr-tint: #e2e6eb; --sr-key: #4c5866; }
+
+/* 自定义标记（src/data/tags.json）：排在最前面，比其它徽章加粗一档以示区分 */
+.sr-badges .sr-tag { font-weight: 600; }
+.sr-badges.sr-bold .sr-tag { font-weight: 800; }
+
+.sr-badges .sr-tag-rose { --sr-tint: #f8cde9; --sr-key: #8a0f66; }
+.sr-badges .sr-tag-bronze { --sr-tint: #ecd9c2; --sr-key: #6b4218; }
+.sr-badges .sr-tag-amber { --sr-tint: #fbdf94; --sr-key: #6b4600; }
+.sr-badges .sr-tag-violet { --sr-tint: #ddd0f8; --sr-key: #5a1b9c; }
+.sr-badges .sr-tag-slate { --sr-tint: #dfe3e8; --sr-key: #3a4653; }
+
+/* CORE 会议分级：靛蓝系的深浅梯度，和 CCF 的红/橙/蓝拉开距离 */
+.sr-badges .sr-core-astar { --sr-tint: #dcdafb; --sr-key: #3730a3; }
+.sr-badges .sr-core-a { --sr-tint: #e3e6fd; --sr-key: #4a55c8; }
+.sr-badges .sr-core-b { --sr-tint: #e3ecf5; --sr-key: #3f6285; }
+.sr-badges .sr-core-c { --sr-tint: #eaedf0; --sr-key: #566270; }
+.sr-badges .sr-core-aus { --sr-tint: #eaedf0; --sr-key: #6b7580; }
+
+/* 中科院 TOP 期刊 */
+.sr-badges .sr-top { --sr-tint: #f9ccd4; --sr-key: #a01f42; }
+
+/* EI 收录 */
+.sr-badges .sr-ei { --sr-tint: #d8eed4; --sr-key: #2c6b2f; }
+
+/* 中科院分区（升级版）：1 区最重，4 区最轻 */
+.sr-badges .sr-zone-1 { --sr-tint: #e8dcf7; --sr-key: #5b2c9e; }
+.sr-badges .sr-zone-2 { --sr-tint: #d9e6fb; --sr-key: #1c4f9e; }
+.sr-badges .sr-zone-3 { --sr-tint: #dcefdd; --sr-key: #2a6b3c; }
+.sr-badges .sr-zone-4 { --sr-tint: #fbf0c4; --sr-key: #7d6001; }
+
+/* JCR 分区 */
+.sr-badges .sr-q1 { --sr-tint: #f9d9d5; --sr-key: #a8281c; }
+.sr-badges .sr-q2 { --sr-tint: #fdeacd; --sr-key: #8a5200; }
+.sr-badges .sr-q3 { --sr-tint: #dfeedd; --sr-key: #2c6b2f; }
+.sr-badges .sr-q4 { --sr-tint: #e4e7ea; --sr-key: #4a545c; }
+
+/* 影响因子 */
+.sr-badges .sr-if { --sr-tint: #c9eae4; --sr-key: #10645a; }
+
+/* 期刊预警 */
+.sr-badges .sr-warn { --sr-tint: #ffe0e0; --sr-key: #b3261e; }
+
+/* 排查用：未匹配 */
+.sr-badges .sr-none { --sr-tint: #f1f3f4; --sr-key: #80868b; }
+
+/* ---------- 外观风格 ---------- */
+
+/* 柔和填充（默认）：浅色底 + 深色字 */
+.sr-badges.sr-theme-soft .sr-badge {
+  background: var(--sr-tint);
+  color: var(--sr-key);
+}
+
+/* 描边：透明底 + 彩色细边 */
+.sr-badges.sr-theme-outline .sr-badge {
+  background: transparent;
+  color: var(--sr-key);
+  border: 1px solid var(--sr-key);
+  border-color: color-mix(in srgb, var(--sr-key) 42%, transparent);
+  padding: 0 6px;
+}
+
+/* 实心：饱和底 + 白字 */
+.sr-badges.sr-theme-solid .sr-badge {
+  background: var(--sr-key);
+  color: #fff;
+}
+
+/* 极简：去掉色块，只留彩色文字 */
+.sr-badges.sr-theme-minimal .sr-badge {
+  background: transparent;
+  color: var(--sr-key);
+  padding: 0;
+  margin-right: 12px;
+  border-radius: 0;
+  font-weight: 600;
+}
+.sr-badges.sr-theme-minimal.sr-bold .sr-badge { font-weight: 800; }
+
+/* 方角标签：直角 + 左侧色条 */
+.sr-badges.sr-theme-square .sr-badge {
+  background: var(--sr-tint);
+  color: var(--sr-key);
+  border-radius: 2px;
+  border-left: 3px solid var(--sr-key);
+  padding: 1px 6px 1px 5px;
+}
+
+/* 低调灰阶：统一灰色，只有预警保留红色 */
+.sr-badges.sr-theme-mono .sr-badge {
+  --sr-tint: #edeff1;
+  --sr-key: #3c4043;
+  background: var(--sr-tint);
+  color: var(--sr-key);
+}
+.sr-badges.sr-theme-mono .sr-warn {
+  --sr-tint: #ffe0e0;
+  --sr-key: #b3261e;
+}
+
+/* 详情浮层里跟在字段值后面 */
+#gsc_vcd_table .sr-badges { margin-top: 4px; }
+
+/* ---------- 深色模式（设置页 / 弹窗会用到；Scholar 本身是浅色） ---------- */
+@media (prefers-color-scheme: dark) {
+  .sr-badges.sr-theme-soft .sr-badge,
+  .sr-badges.sr-theme-square .sr-badge,
+  .sr-badges.sr-theme-mono .sr-badge {
+    background: color-mix(in srgb, var(--sr-key) 30%, transparent);
+    color: color-mix(in srgb, var(--sr-key) 30%, white);
+  }
+  .sr-badges.sr-theme-outline .sr-badge,
+  .sr-badges.sr-theme-minimal .sr-badge {
+    color: color-mix(in srgb, var(--sr-key) 35%, white);
+  }
+  .sr-badges.sr-theme-square .sr-badge {
+    border-left-color: color-mix(in srgb, var(--sr-key) 35%, white);
+  }
+  .sr-badges.sr-theme-solid .sr-badge {
+    background: color-mix(in srgb, var(--sr-key) 82%, white);
+    color: #14161a;
+  }
+}

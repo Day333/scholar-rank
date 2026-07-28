@@ -1,0 +1,94 @@
+{
+  "manifest_version": 3,
+  "name": "学术分级标注 · Scholar Rank",
+  "version": "1.0.0",
+  "description": "在 Google Scholar 个人主页与搜索结果上直接显示 CCF 分级、中科院分区、SCI/EI 收录与影响因子。",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "学术分级标注",
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "src/options/options.html",
+  "permissions": ["storage", "activeTab"],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://scholar.google.com/*",
+        "https://scholar.google.com.hk/*",
+        "https://scholar.google.com.tw/*",
+        "https://scholar.google.com.sg/*",
+        "https://scholar.google.com.au/*",
+        "https://scholar.google.com.br/*",
+        "https://scholar.google.co.uk/*",
+        "https://scholar.google.co.jp/*",
+        "https://scholar.google.co.kr/*",
+        "https://scholar.google.co.in/*",
+        "https://scholar.google.ca/*",
+        "https://scholar.google.de/*",
+        "https://scholar.google.fr/*",
+        "https://scholar.google.it/*",
+        "https://scholar.google.es/*",
+        "https://scholar.google.nl/*",
+        "https://scholar.google.ru/*",
+        "https://scholar.google.ch/*",
+        "https://scholar.google.se/*",
+        "https://scholar.google.pl/*",
+        "https://scholar.google.cn/*",
+        "https://xueshu.lanfanshu.cn/*",
+        "https://scholar.lanfanshu.cn/*",
+        "https://sc.panda985.com/*"
+      ],
+      "js": [
+        "src/lib/settings.js",
+        "src/lib/normalize.js",
+        "src/lib/ranking.js",
+        "src/content/scholar.js"
+      ],
+      "css": ["src/content/badges.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/data/*.json"],
+      "matches": [
+        "https://scholar.google.com/*",
+        "https://scholar.google.com.hk/*",
+        "https://scholar.google.com.tw/*",
+        "https://scholar.google.com.sg/*",
+        "https://scholar.google.com.au/*",
+        "https://scholar.google.com.br/*",
+        "https://scholar.google.co.uk/*",
+        "https://scholar.google.co.jp/*",
+        "https://scholar.google.co.kr/*",
+        "https://scholar.google.co.in/*",
+        "https://scholar.google.ca/*",
+        "https://scholar.google.de/*",
+        "https://scholar.google.fr/*",
+        "https://scholar.google.it/*",
+        "https://scholar.google.es/*",
+        "https://scholar.google.nl/*",
+        "https://scholar.google.ru/*",
+        "https://scholar.google.ch/*",
+        "https://scholar.google.se/*",
+        "https://scholar.google.pl/*",
+        "https://scholar.google.cn/*",
+        "https://xueshu.lanfanshu.cn/*",
+        "https://scholar.lanfanshu.cn/*",
+        "https://sc.panda985.com/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>学术分级标注 · 设置</title>
+  <link rel="stylesheet" href="../content/badges.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>学术分级标注 · 设置</h1>
+
+    <section>
+      <h2>总开关</h2>
+      <label class="row"><input type="checkbox" data-key="enabled"><span>启用扩展</span></label>
+    </section>
+
+    <section>
+      <h2>生效位置</h2>
+      <label class="row"><input type="checkbox" data-key="showOnProfile"><span>个人主页论文列表</span></label>
+      <label class="row"><input type="checkbox" data-key="showOnSearch"><span>搜索结果 / 引用列表</span></label>
+      <label class="row"><input type="checkbox" data-key="showOnDetail"><span>单篇论文详情浮层</span></label>
+    </section>
+
+    <section>
+      <h2>显示哪些徽章</h2>
+      <label class="row"><input type="checkbox" data-key="showPreprint"><span>预印本标记<em>arXiv / bioRxiv / SSRN 等，提示未经同行评审</em></span></label>
+      <label class="row"><input type="checkbox" data-key="showTags"><span>自定义标记<em>在 src/data/tags.json 里增删，命中后排在最前面</em></span></label>
+      <div id="tagList" class="sr-badges tag-list"></div>
+      <label class="row"><input type="checkbox" data-key="showCcf"><span>CCF 分级<em>CCF 推荐国际学术会议和期刊目录</em></span></label>
+      <label class="row"><input type="checkbox" data-key="showCore"><span>CORE 会议分级<em>澳大利亚 CORE Conference Rankings，A*/A/B/C</em></span></label>
+      <label class="row"><input type="checkbox" data-key="showTop"><span>中科院 TOP 期刊</span></label>
+      <label class="row"><input type="checkbox" data-key="showEi"><span>EI 收录</span></label>
+      <label class="row"><input type="checkbox" data-key="showCas"><span>中科院分区（升级版）</span></label>
+      <label class="row"><input type="checkbox" data-key="showJcr"><span>JCR 分区 Q1–Q4</span></label>
+      <label class="row"><input type="checkbox" data-key="showIf"><span>影响因子 IF</span></label>
+      <label class="row"><input type="checkbox" data-key="showWarn"><span>国际期刊预警名单</span></label>
+      <label class="row"><input type="checkbox" data-key="showUnmatched"><span>未匹配也显示灰色标记<em>排查匹配问题时打开</em></span></label>
+    </section>
+
+    <section>
+      <h2>外观风格</h2>
+      <p class="hint">点一下就切换，Scholar 页面会立即跟着变。</p>
+      <div id="themeGrid" class="theme-grid"></div>
+
+      <label class="row slider">
+        <span class="slider-label">徽章字号</span>
+        <input type="range" min="80" max="140" step="5" data-key="badgeScale">
+        <output id="scaleOut">100%</output>
+      </label>
+      <label class="row"><input type="checkbox" data-key="boldBadges"><span>加粗徽章文字</span></label>
+    </section>
+
+    <section>
+      <h2>匹配自测</h2>
+      <p class="hint">把 Google Scholar 上的出处原文粘进来，看看会命中什么。</p>
+      <input type="text" id="probe" placeholder="例：IEEE Transactions on Information Forensics and Security 19, 1-14">
+      <div id="probeResult" class="probe-result"></div>
+    </section>
+
+    <section>
+      <h2>数据集</h2>
+      <div id="datasetInfo" class="dataset">加载中…</div>
+    </section>
+  </main>
+  <script src="../lib/settings.js"></script>
+  <script src="../lib/normalize.js"></script>
+  <script src="../lib/ranking.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
