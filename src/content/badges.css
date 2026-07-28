@@ -145,23 +145,12 @@
 /* 详情浮层里跟在字段值后面 */
 #gsc_vcd_table .sr-badges { margin-top: 4px; }
 
-/* ---------- 深色模式（设置页 / 弹窗会用到；Scholar 本身是浅色） ---------- */
-@media (prefers-color-scheme: dark) {
-  .sr-badges.sr-theme-soft .sr-badge,
-  .sr-badges.sr-theme-square .sr-badge,
-  .sr-badges.sr-theme-mono .sr-badge {
-    background: color-mix(in srgb, var(--sr-key) 30%, transparent);
-    color: color-mix(in srgb, var(--sr-key) 30%, white);
-  }
-  .sr-badges.sr-theme-outline .sr-badge,
-  .sr-badges.sr-theme-minimal .sr-badge {
-    color: color-mix(in srgb, var(--sr-key) 35%, white);
-  }
-  .sr-badges.sr-theme-square .sr-badge {
-    border-left-color: color-mix(in srgb, var(--sr-key) 35%, white);
-  }
-  .sr-badges.sr-theme-solid .sr-badge {
-    background: color-mix(in srgb, var(--sr-key) 82%, white);
-    color: #14161a;
-  }
-}
+/* ---------- 这里故意没有 @media (prefers-color-scheme: dark) ----------
+ *
+ * Google Scholar 的页面永远是浅色的，跟系统主题无关。曾经按系统深色模式把徽章
+ * 文字调亮，结果系统一开深色，Scholar 上就变成浅字压浅底，整排徽章直接看不见。
+ *
+ * 所以这套配色只按「浅色底」设计一次。设置页和弹窗虽然自己是深色的，但它们把
+ * 徽章预览放在一块浅色衬底上（见 options.css / popup.css），既能看清，也保证
+ * 预览效果和 Scholar 上真正看到的完全一致。
+ */

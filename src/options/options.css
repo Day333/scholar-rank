@@ -94,6 +94,27 @@ section {
 .tag-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
 .tag-desc { font-size: 12px; color: var(--muted); }
 
+/*
+ * 所有徽章预览都坐在一块浅色衬底上。Scholar 页面永远是浅色的，徽章配色也只按
+ * 浅色底设计，所以深色模式下也必须用浅底来预览，否则看到的和实际效果对不上。
+ */
+.theme-card .sr-badges,
+.probe-result .sr-badges,
+.tag-item {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.tag-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 3px 0;
+  width: fit-content;
+}
+.tag-item .tag-desc { color: #5f6368; }
+
 #probe {
   width: 100%;
   padding: 8px 10px;
