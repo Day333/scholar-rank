@@ -136,7 +136,7 @@
       panel.innerHTML = `
         <div class="sr-stats-header">
           <span>论文统计</span>
-          <button type="button" class="sr-stats-toggle" aria-label="收起论文统计" aria-expanded="true">−</button>
+          <span class="sr-stats-toggle" role="button" tabindex="0" aria-label="收起论文统计" aria-expanded="true">−</span>
         </div>
         <div class="sr-stats-body">
           <div class="sr-stats-total">
@@ -145,33 +145,47 @@
           </div>
           <div class="sr-stats-title">CCF 分类</div>
           <div class="sr-stats-grid sr-stats-grid-ccf">
-            <button type="button" class="sr-stat sr-stat-a" data-filter="ccf-a" aria-pressed="false"><span>A 类</span><strong data-stat="ccf-a">0</strong></button>
-            <button type="button" class="sr-stat sr-stat-b" data-filter="ccf-b" aria-pressed="false"><span>B 类</span><strong data-stat="ccf-b">0</strong></button>
-            <button type="button" class="sr-stat sr-stat-c" data-filter="ccf-c" aria-pressed="false"><span>C 类</span><strong data-stat="ccf-c">0</strong></button>
+            <span class="sr-stat sr-stat-a" data-filter="ccf-a" role="button" tabindex="0" aria-pressed="false"><span>A 类</span><strong data-stat="ccf-a">0</strong></span>
+            <span class="sr-stat sr-stat-b" data-filter="ccf-b" role="button" tabindex="0" aria-pressed="false"><span>B 类</span><strong data-stat="ccf-b">0</strong></span>
+            <span class="sr-stat sr-stat-c" data-filter="ccf-c" role="button" tabindex="0" aria-pressed="false"><span>C 类</span><strong data-stat="ccf-c">0</strong></span>
           </div>
           <div class="sr-stats-title">中科院分区</div>
           <div class="sr-stats-grid sr-stats-grid-zone">
-            <button type="button" class="sr-stat sr-stat-z1" data-filter="zone-1" aria-pressed="false"><span>1 区</span><strong data-stat="zone-1">0</strong></button>
-            <button type="button" class="sr-stat sr-stat-z2" data-filter="zone-2" aria-pressed="false"><span>2 区</span><strong data-stat="zone-2">0</strong></button>
-            <button type="button" class="sr-stat sr-stat-z3" data-filter="zone-3" aria-pressed="false"><span>3 区</span><strong data-stat="zone-3">0</strong></button>
-            <button type="button" class="sr-stat sr-stat-z4" data-filter="zone-4" aria-pressed="false"><span>4 区</span><strong data-stat="zone-4">0</strong></button>
+            <span class="sr-stat sr-stat-z1" data-filter="zone-1" role="button" tabindex="0" aria-pressed="false"><span>1 区</span><strong data-stat="zone-1">0</strong></span>
+            <span class="sr-stat sr-stat-z2" data-filter="zone-2" role="button" tabindex="0" aria-pressed="false"><span>2 区</span><strong data-stat="zone-2">0</strong></span>
+            <span class="sr-stat sr-stat-z3" data-filter="zone-3" role="button" tabindex="0" aria-pressed="false"><span>3 区</span><strong data-stat="zone-3">0</strong></span>
+            <span class="sr-stat sr-stat-z4" data-filter="zone-4" role="button" tabindex="0" aria-pressed="false"><span>4 区</span><strong data-stat="zone-4">0</strong></span>
           </div>
-          <button type="button" class="sr-stats-first" data-filter="first" aria-pressed="false"><span>一作论文</span><strong data-stat="first">0</strong></button>
+          <span class="sr-stats-first" data-filter="first" role="button" tabindex="0" aria-pressed="false"><span>一作论文</span><strong data-stat="first">0</strong></span>
           <button type="button" class="sr-load-all">加载全部论文</button>
           <div class="sr-load-status" data-stat="load-status" role="status"></div>
           <div class="sr-stats-note" data-stat="note">点击分类可筛选 · 支持 * 标注的共同一作</div>
         </div>`;
-      panel.querySelector('.sr-stats-toggle').addEventListener('click', (event) => {
+      const toggleStats = (event) => {
         const collapsed = panel.classList.toggle('sr-stats-collapsed');
         event.currentTarget.textContent = collapsed ? '+' : '−';
         event.currentTarget.setAttribute('aria-expanded', String(!collapsed));
         event.currentTarget.setAttribute('aria-label', collapsed ? '展开论文统计' : '收起论文统计');
+      };
+      const toggle = panel.querySelector('.sr-stats-toggle');
+      toggle.addEventListener('click', toggleStats);
+      toggle.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        toggleStats(event);
       });
       panel.querySelectorAll('[data-filter]').forEach((button) => {
-        button.addEventListener('click', () => {
+        const activateFilter = () => {
+          if (button.getAttribute('aria-disabled') === 'true') return;
           const filter = button.dataset.filter;
           activeProfileFilter = activeProfileFilter === filter ? null : filter;
           renderProfileStats();
+        };
+        button.addEventListener('click', activateFilter);
+        button.addEventListener('keydown', (event) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          activateFilter();
         });
       });
       panel.querySelector('.sr-load-all').addEventListener('click', () => {
@@ -327,8 +341,10 @@
     setStat(panel, 'first', summary.firstAuthorAvailable ? summary.firstAuthor : '—');
     for (const button of panel.querySelectorAll('[data-filter]')) {
       const selected = button.dataset.filter === activeProfileFilter;
+      const disabled = button.dataset.filter === 'first' && !summary.firstAuthorAvailable;
       button.setAttribute('aria-pressed', String(selected));
-      button.disabled = button.dataset.filter === 'first' && !summary.firstAuthorAvailable;
+      button.setAttribute('aria-disabled', String(disabled));
+      button.tabIndex = disabled ? -1 : 0;
     }
     setStat(panel, 'note', summary.firstAuthorAvailable
       ? '点击分类可筛选 · 支持 * 标注的共同一作'
