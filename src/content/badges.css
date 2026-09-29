@@ -91,7 +91,7 @@
 
 /* 柔和填充（默认）：浅色底 + 深色字 */
 .sr-badges.sr-theme-soft .sr-badge {
-  background: color-mix(in srgb, var(--sr-tint) 82%, var(--sr-key) 18%);
+  background: color-mix(in srgb, var(--sr-tint) 60%, var(--sr-key) 40%);
   color: var(--sr-key);
 }
 
@@ -166,12 +166,25 @@
   right: 18px;
 }
 
-.sr-stats-panel.sr-stats-inline {
-  position: sticky;
-  top: 72px;
+.sr-stats-panel.sr-stats-integrated {
+  position: static;
   width: 100%;
-  margin-bottom: 16px;
+  margin: 14px 0 0;
+  border: 0;
+  border-top: 1px solid #e0e0e0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  z-index: auto;
 }
+
+.sr-stats-panel.sr-stats-integrated .sr-stats-header {
+  padding: 12px 0 8px;
+  border-bottom: 0;
+}
+
+.sr-stats-panel.sr-stats-integrated .sr-stats-body { padding: 0 0 10px; }
+.sr-stats-panel.sr-stats-integrated.sr-stats-collapsed { width: 100%; }
 
 .sr-stats-header {
   display: flex;

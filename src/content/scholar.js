@@ -156,9 +156,14 @@
     }
 
     const rail = document.querySelector('#gsc_rsb');
-    const host = rail || document.body;
-    if (panel.parentNode !== host) host.insertBefore(panel, host.firstChild);
-    panel.classList.toggle('sr-stats-inline', Boolean(rail));
+    const citationNode = rail && (rail.querySelector('#gsc_rsb_cit') || rail.querySelector('.gsc_rsb_s'));
+    const citationSection = citationNode && (citationNode.closest('.gsc_rsb_s') || citationNode);
+    const host = citationSection || rail || document.body;
+    if (panel.parentNode !== host) {
+      if (rail) host.appendChild(panel);
+      else host.insertBefore(panel, host.firstChild);
+    }
+    panel.classList.toggle('sr-stats-integrated', Boolean(rail));
     panel.classList.toggle('sr-stats-floating', !rail);
     return panel;
   }
