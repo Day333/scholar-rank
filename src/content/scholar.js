@@ -97,8 +97,38 @@
     }
   }
 
+  function citationStatsHost() {
+    const anchors = [
+      document.querySelector('#gsc_rsb_st'),
+      document.querySelector('#gsc_g'),
+      document.querySelector('#gsc_rsb_cit'),
+    ].filter(Boolean);
+
+    for (const node of anchors) {
+      const section = node.closest('.gsc_rsb_s');
+      if (section) return section;
+      if (node.parentElement && node.parentElement !== document.body) return node.parentElement;
+    }
+
+    const rail = document.querySelector('#gsc_rsb');
+    if (rail) return rail.querySelector('.gsc_rsb_s') || rail;
+
+    for (const heading of document.querySelectorAll('.gsc_rsb_h, .gsc_rsb_hdr')) {
+      const label = heading.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+      if (label.includes('引用次数') || label === 'cited by' || label === 'citations') {
+        return heading.closest('.gsc_rsb_s') || heading.parentElement;
+      }
+    }
+    return null;
+  }
+
   function ensureStatsPanel() {
+    const host = citationStatsHost();
     let panel = document.querySelector('.' + STATS_PANEL_CLASS);
+    if (!host) {
+      if (panel) panel.remove();
+      return null;
+    }
     if (!panel) {
       panel = document.createElement('aside');
       panel.className = STATS_PANEL_CLASS;
@@ -155,16 +185,8 @@
       });
     }
 
-    const rail = document.querySelector('#gsc_rsb');
-    const citationNode = rail && (rail.querySelector('#gsc_rsb_cit') || rail.querySelector('.gsc_rsb_s'));
-    const citationSection = citationNode && (citationNode.closest('.gsc_rsb_s') || citationNode);
-    const host = citationSection || rail || document.body;
-    if (panel.parentNode !== host) {
-      if (rail) host.appendChild(panel);
-      else host.insertBefore(panel, host.firstChild);
-    }
-    panel.classList.toggle('sr-stats-integrated', Boolean(rail));
-    panel.classList.toggle('sr-stats-floating', !rail);
+    if (panel.parentNode !== host) host.appendChild(panel);
+    panel.classList.add('sr-stats-integrated');
     return panel;
   }
 
@@ -284,6 +306,11 @@
     const summary = SRStats.summarize(entries, names);
     if (activeProfileFilter === 'first' && !summary.firstAuthorAvailable) activeProfileFilter = null;
     const panel = ensureStatsPanel();
+    if (!panel) {
+      activeProfileFilter = null;
+      for (const item of entries) item.row.classList.remove('sr-row-filtered-out');
+      return;
+    }
     let visible = 0;
     for (const item of entries) {
       const matches = SRStats.matchesFilter(item, activeProfileFilter, names);

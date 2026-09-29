@@ -160,14 +160,8 @@
   z-index: 1000;
 }
 
-.sr-stats-panel.sr-stats-floating {
-  position: fixed;
-  top: 92px;
-  right: 18px;
-}
-
 .sr-stats-panel.sr-stats-integrated {
-  position: static;
+  position: static !important;
   width: 100%;
   margin: 14px 0 0;
   border: 0;
@@ -291,14 +285,6 @@
 .sr-stats-note { margin-top: 7px; color: #80868b; font-size: 10px; }
 
 .sr-row-filtered-out { display: none !important; }
-
-@media (max-width: 1180px) {
-  .sr-stats-panel.sr-stats-floating {
-    top: auto;
-    right: 10px;
-    bottom: 12px;
-  }
-}
 
 /* ---------- 这里故意没有 @media (prefers-color-scheme: dark) ----------
  *

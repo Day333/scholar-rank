@@ -33,7 +33,7 @@
     showWarn: true,
 
     // 外观
-    theme: 'soft',
+    theme: 'solid',
     badgeScale: 100,       // 徽章字号百分比
     boldBadges: false,     // 加粗徽章文字
 
