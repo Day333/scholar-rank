@@ -53,6 +53,7 @@
         "src/lib/settings.js",
         "src/lib/normalize.js",
         "src/lib/ranking.js",
+        "src/lib/stats.js",
         "src/content/scholar.js"
       ],
       "css": ["src/content/badges.css"],

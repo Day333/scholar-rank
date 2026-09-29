@@ -23,6 +23,13 @@
     </section>
 
     <section>
+      <h2>一作识别</h2>
+      <p class="hint">通常会自动读取主页姓名。若论文中的姓名写法不同，可在下面每行填写一个别名。</p>
+      <textarea class="text-area" data-key="authorAliases" rows="4" placeholder="例：&#10;Kuiye Ding&#10;K Ding&#10;Ding Kuiye"></textarea>
+      <p class="hint field-note">作者列表首位计为一作；开头连续使用 * 标注的作者计为共同一作。</p>
+    </section>
+
+    <section>
       <h2>显示哪些徽章</h2>
       <label class="row"><input type="checkbox" data-key="showPreprint"><span>预印本标记<em>arXiv / bioRxiv / SSRN 等，提示未经同行评审</em></span></label>
       <label class="row"><input type="checkbox" data-key="showTags"><span>自定义标记<em>在 src/data/tags.json 里增删，命中后排在最前面</em></span></label>

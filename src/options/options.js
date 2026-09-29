@@ -10,7 +10,7 @@
   for (const el of inputs) {
     const key = el.dataset.key;
     if (el.type === 'checkbox') el.checked = !!settings[key];
-    else el.value = settings[key];
+    else el.value = settings[key] ?? '';
     el.addEventListener('change', onChange);
     el.addEventListener('input', onChange);
   }
@@ -18,7 +18,9 @@
   function currentValues() {
     const out = { theme };
     for (const el of inputs) {
-      out[el.dataset.key] = el.type === 'checkbox' ? el.checked : Number(el.value);
+      if (el.type === 'checkbox') out[el.dataset.key] = el.checked;
+      else if (el.type === 'range') out[el.dataset.key] = Number(el.value);
+      else out[el.dataset.key] = el.value;
     }
     return out;
   }

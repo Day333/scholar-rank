@@ -37,6 +37,9 @@
     badgeScale: 100,       // 徽章字号百分比
     boldBadges: false,     // 加粗徽章文字
 
+    // 作者识别
+    authorAliases: '',     // 每行一个姓名写法，用于补充一作识别
+
     // 其它
     showUnmatched: false,  // 未匹配到的出处也显示一个灰色标记（排查用）
   };

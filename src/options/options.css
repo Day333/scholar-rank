@@ -89,6 +89,21 @@ section {
 .theme-card .sr-badges { margin: 0; }
 
 .hint { margin: 0 0 10px; font-size: 12px; color: var(--muted); }
+.hint.field-note { margin: 7px 0 0; }
+
+.text-area {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 13px/1.5 Roboto, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+.text-area:focus { outline: 2px solid #1a73e8; outline-offset: 1px; }
 
 .tag-list { margin: 2px 0 8px 26px; }
 .tag-item { display: flex; align-items: center; gap: 8px; padding: 2px 0; }

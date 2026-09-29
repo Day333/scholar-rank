@@ -91,7 +91,7 @@
 
 /* 柔和填充（默认）：浅色底 + 深色字 */
 .sr-badges.sr-theme-soft .sr-badge {
-  background: var(--sr-tint);
+  background: color-mix(in srgb, var(--sr-tint) 82%, var(--sr-key) 18%);
   color: var(--sr-key);
 }
 
@@ -144,6 +144,148 @@
 
 /* 详情浮层里跟在字段值后面 */
 #gsc_vcd_table .sr-badges { margin-top: 4px; }
+
+/* ---------- 个人主页右侧论文统计 ---------- */
+
+.sr-stats-panel {
+  box-sizing: border-box;
+  width: 232px;
+  overflow: hidden;
+  border: 1px solid #dadce0;
+  border-radius: 12px;
+  background: #fff;
+  color: #202124;
+  box-shadow: 0 2px 10px rgba(60, 64, 67, 0.15);
+  font: 13px/1.4 Roboto, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  z-index: 1000;
+}
+
+.sr-stats-panel.sr-stats-floating {
+  position: fixed;
+  top: 92px;
+  right: 18px;
+}
+
+.sr-stats-panel.sr-stats-inline {
+  position: sticky;
+  top: 72px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.sr-stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px 9px;
+  border-bottom: 1px solid #eceff1;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.sr-stats-toggle {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f3f4;
+  color: #5f6368;
+  font: 18px/22px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.sr-stats-toggle:hover { background: #e8eaed; color: #202124; }
+.sr-stats-toggle:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+
+.sr-stats-body { padding: 10px 12px 12px; }
+.sr-stats-panel.sr-stats-collapsed { width: 142px; }
+.sr-stats-panel.sr-stats-collapsed .sr-stats-header { border-bottom: 0; }
+.sr-stats-panel.sr-stats-collapsed .sr-stats-body { display: none; }
+
+.sr-stats-total { margin-bottom: 9px; color: #5f6368; font-size: 12px; }
+.sr-stats-total strong { color: #202124; font-size: 14px; }
+.sr-stats-title { margin: 9px 0 5px; color: #5f6368; font-size: 11px; font-weight: 600; }
+
+.sr-stats-grid { display: grid; gap: 6px; }
+.sr-stats-grid-ccf { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.sr-stats-grid-zone { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.sr-stat {
+  min-width: 0;
+  padding: 6px 3px 5px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  transition: filter 120ms ease, box-shadow 120ms ease;
+}
+.sr-stat span { display: block; margin-bottom: 1px; font-size: 10px; white-space: nowrap; }
+.sr-stat strong { display: block; font-size: 17px; line-height: 1.15; }
+.sr-stat:hover:not(:disabled) { filter: saturate(1.14) brightness(0.97); }
+.sr-stat:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+.sr-stat[aria-pressed="true"] { box-shadow: inset 0 0 0 2px currentColor, 0 2px 5px rgba(60, 64, 67, 0.18); }
+.sr-stat:disabled { cursor: not-allowed; opacity: 0.48; }
+
+.sr-stat-a { background: #fbdedb; color: #9f241d; }
+.sr-stat-b { background: #fdeacd; color: #805000; }
+.sr-stat-c { background: #dde9fb; color: #1a4f9c; }
+.sr-stat-z1 { background: #e8dcf7; color: #5b2c9e; }
+.sr-stat-z2 { background: #d9e6fb; color: #1c4f9e; }
+.sr-stat-z3 { background: #dcefdd; color: #2a6b3c; }
+.sr-stat-z4 { background: #fbf0c4; color: #705600; }
+
+.sr-stats-first {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #e6f4ea;
+  color: #176b3a;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.sr-stats-first strong { font-size: 19px; line-height: 1; }
+.sr-stats-first:hover:not(:disabled) { background: #d9efdf; }
+.sr-stats-first:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+.sr-stats-first[aria-pressed="true"] { box-shadow: inset 0 0 0 2px currentColor, 0 2px 5px rgba(60, 64, 67, 0.18); }
+.sr-stats-first:disabled { cursor: not-allowed; opacity: 0.48; }
+
+.sr-load-all {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 9px;
+  padding: 7px 9px;
+  border: 1px solid #c5d7f2;
+  border-radius: 8px;
+  background: #eef4fd;
+  color: #185abc;
+  font: 600 11px/1.35 Roboto, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+}
+.sr-load-all:hover:not(:disabled) { background: #e3edfc; border-color: #9bbce8; }
+.sr-load-all:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+.sr-load-all:disabled { border-color: #dadce0; background: #f1f3f4; color: #80868b; cursor: default; }
+.sr-load-status:empty { display: none; }
+.sr-load-status { margin-top: 6px; color: #5f6368; font-size: 10px; }
+.sr-stats-note { margin-top: 7px; color: #80868b; font-size: 10px; }
+
+.sr-row-filtered-out { display: none !important; }
+
+@media (max-width: 1180px) {
+  .sr-stats-panel.sr-stats-floating {
+    top: auto;
+    right: 10px;
+    bottom: 12px;
+  }
+}
 
 /* ---------- 这里故意没有 @media (prefers-color-scheme: dark) ----------
  *

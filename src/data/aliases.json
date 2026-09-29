@@ -2,8 +2,11 @@
   "comment": "Google Scholar 上的出处写法与 CCF 目录官方名称对不上的常见情况。key 会经 normalizeName 归一化后再匹配。",
   "names": {
     "Advances in Neural Information Processing Systems": "NeurIPS",
+    "Advances in Neural Information Processing System": "NeurIPS",
     "Annual Conference on Neural Information Processing Systems": "NeurIPS",
+    "Annual Conference on Neural Information Processing System": "NeurIPS",
     "Neural Information Processing Systems": "NeurIPS",
+    "Neural Information Processing System": "NeurIPS",
     "Proceedings of the ACM Web Conference": "WWW",
     "Proceedings of the Web Conference": "WWW",
     "The World Wide Web Conference": "WWW",

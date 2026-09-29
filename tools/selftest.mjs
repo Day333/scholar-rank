@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 (0, eval)(readFileSync(join(__dirname, '..', 'src', 'lib', 'normalize.js'), 'utf8'));
 (0, eval)(readFileSync(join(__dirname, '..', 'src', 'lib', 'ranking.js'), 'utf8'));
+(0, eval)(readFileSync(join(__dirname, '..', 'src', 'lib', 'stats.js'), 'utf8'));
 
 const read = (f) => JSON.parse(readFileSync(join(__dirname, '..', 'src', 'data', f), 'utf8'));
 const rank = new globalThis.SRRanking({
@@ -26,6 +27,7 @@ const CASES = [
   ['Proceedings of the IEEE/CVF International Conference on Computer Vision, 1-9', 'CCF A', 'CORE A*'],
   ['2023 IEEE International Conference on Robotics and Automation (ICRA), 123-130', 'CCF B', 'CORE A*'],
   ['Advances in Neural Information Processing Systems 36, 1-12', 'ML三大顶会', 'CCF A', 'CORE A*'],
+  ['Advances in Neural Information Processing System (NeurIPS 2026)', 'ML三大顶会', 'CCF A', 'CORE A*'],
   // tags.json 里的自定义标记
   ['International Conference on Machine Learning, 1000-1010', 'ML三大顶会', 'CCF A', 'CORE A*'],
   ['Proceedings of the International Conference on Learning Representations, 1-12', 'ML三大顶会', 'CCF A'],
@@ -184,12 +186,63 @@ for (const venue of NEGATIVE) {
   }
 }
 
+let statsChecks = 0;
+function checkStats(condition, message) {
+  statsChecks++;
+  if (condition) {
+    console.log(`ok    [统计] ${message}`);
+  } else {
+    failed++;
+    console.error(`FAIL  [统计] ${message}`);
+  }
+}
+
+checkStats(globalThis.SRStats.isFirstAuthor('K Ding, Y Hu, H Wang', 'Kuiye Ding'), '缩写作者名可识别一作');
+checkStats(globalThis.SRStats.isFirstAuthor('K Ding, Y Hu, H Wang', 'Ding Kuiye'), '兼容主页姓名的姓氏前置写法');
+checkStats(!globalThis.SRStats.isFirstAuthor('Y Hu, K Ding, H Wang', 'Kuiye Ding'), '非首位作者不计为一作');
+checkStats(
+  globalThis.SRStats.isFirstAuthor('Yuqi Li*, Kuiye Ding*, Chuanguang Yang, Szu-Yu Chen, Yingli Tian', 'Kuiye Ding')
+    && !globalThis.SRStats.isFirstAuthor('Yuqi Li*, Kuiye Ding*, Chuanguang Yang, Szu-Yu Chen, Yingli Tian', 'Chuanguang Yang'),
+  '星号标注的连续作者可识别为共同一作',
+);
+checkStats(globalThis.SRStats.isFirstAuthor('Q Ding, Y Hu', ['Kuiye Ding', 'Q Ding']), '作者别名可补充一作识别');
+
+const parsedNames = globalThis.SRStats.profileNames('Ding, Kuiye\nK Ding；K Ding');
+checkStats(parsedNames.length === 2 && parsedNames[0] === 'Ding, Kuiye', '作者别名按行解析、去重并保留姓名中的逗号');
+
+const filterItem = {
+  authors: 'K Ding, Y Hu',
+  result: { ccf: { rank: 'A' }, journal: { zone: 1 } },
+};
+checkStats(globalThis.SRStats.matchesFilter(filterItem, 'ccf-a', 'Kuiye Ding'), 'CCF 分类筛选正确');
+checkStats(globalThis.SRStats.matchesFilter(filterItem, 'zone-1', 'Kuiye Ding'), '中科院分区筛选正确');
+checkStats(
+  globalThis.SRStats.matchesFilter(filterItem, 'first', ['Kuiye Ding'])
+    && !globalThis.SRStats.matchesFilter(filterItem, 'ccf-b', ['Kuiye Ding']),
+  '一作筛选正确且不会混入其他分类',
+);
+
+const statsSummary = globalThis.SRStats.summarize([
+  { authors: 'K Ding, Y Hu', result: { ccf: { rank: 'A' }, journal: { zone: 1 } } },
+  { authors: 'Y Hu, K Ding', result: { ccf: { rank: 'B' }, journal: { zone: 2 } } },
+  { authors: 'Kuiye Ding, H Wang', result: { ccf: { rank: 'C' } } },
+  { authors: 'S Ren, K He', result: { journal: { zone: 4 } } },
+], 'Kuiye Ding');
+checkStats(
+  statsSummary.total === 4
+    && statsSummary.ccf.A === 1 && statsSummary.ccf.B === 1 && statsSummary.ccf.C === 1
+    && statsSummary.zones[1] === 1 && statsSummary.zones[2] === 1
+    && statsSummary.zones[3] === 0 && statsSummary.zones[4] === 1
+    && statsSummary.firstAuthor === 2,
+  'CCF、分区与一作汇总正确',
+);
+
 if (rank.missingAliases.length) {
   failed++;
   console.error('FAIL  aliases.json 里存在指向不存在 CCF 简称的别名：');
   for (const m of rank.missingAliases) console.error('      ' + m);
 }
 
-const total = CASES.length + BYLINES.length + BYLINES_EMPTY.length + FORBIDDEN.length + NEGATIVE.length;
+const total = CASES.length + BYLINES.length + BYLINES_EMPTY.length + FORBIDDEN.length + NEGATIVE.length + statsChecks;
 console.log(`\n${total} 项，失败 ${failed} 项`);
 process.exit(failed ? 1 : 0);

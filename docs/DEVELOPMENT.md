@@ -10,6 +10,7 @@ icons/                        由 tools/make-icons.mjs 生成
 src/
   lib/normalize.js            刊名归一化与候选名生成（浏览器 / Node 共用）
   lib/ranking.js              查表与徽章生成（浏览器 / Node 共用）
+  lib/stats.js                个人主页统计、作者姓名匹配与筛选（浏览器 / Node 共用）
   lib/settings.js             设置项默认值、外观风格清单
   data/ccf.json               CCF 目录（构建产物）
   data/core.json              CORE 会议分级（构建产物）
@@ -94,7 +95,7 @@ CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `n
 ## 测试
 
 ```bash
-npm test                  # 62 项断言，含学位论文/截断歧义/标记误报的负向用例
+npm test                  # 73 项断言，含学位论文/截断歧义/标记误报和统计筛选用例
 npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 ```
 
