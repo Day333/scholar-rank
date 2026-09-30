@@ -38,6 +38,35 @@
     fuzzyConf: true,    // 会议全称对不上时是否退化到 token 包含度匹配
   };
 
+  // 这些词通常表示主会的二级轨道，不能继承主会等级。若被匹配条目的正式名称本身
+  // 也包含同一标记（例如 IWQoS / HotOS），则说明它本来就是独立收录的 workshop，予以保留。
+  const SECONDARY_TRACK_MARKERS = [
+    { raw: /\bworkshops?\b/i, official: /\bworkshops?\b/i, label: 'workshop' },
+    { raw: /\bfindings\b/i, official: /\bfindings\b/i, label: 'findings' },
+    { raw: /\bcompanion\b/i, official: /\bcompanion\b/i, label: 'companion' },
+    { raw: /\b(?:demo|demonstration)s?(?:\s+track)?\b/i, official: /\b(?:demo|demonstration)s?\b/i, label: 'demo' },
+    { raw: /\bextended\s+abstracts?\b/i, official: /\bextended\s+abstracts?\b/i, label: 'extended abstracts' },
+    { raw: /\bdoctoral\s+consortium\b/i, official: /\bdoctoral\s+consortium\b/i, label: 'doctoral consortium' },
+    { raw: /\bshort\s+papers?\b/i, official: /\bshort\s+papers?\b/i, label: 'short papers' },
+    { raw: /\badjunct\b/i, official: /\badjunct\b/i, label: 'adjunct' },
+  ];
+
+  // CCF 的 HotStorage 正式条目名称省略了 “Workshop”，但它本身就是独立收录会议。
+  const OFFICIAL_WORKSHOP_EXCEPTIONS = new Set(['HOTSTORAGE']);
+
+  function secondaryTrackReason(raw, entry) {
+    if (!entry) return null;
+    const officialName = String(entry.name || '');
+    const abbr = String(entry.abbr || '').toUpperCase();
+    for (const marker of SECONDARY_TRACK_MARKERS) {
+      if (!marker.raw.test(raw)) continue;
+      if (marker.official.test(officialName)) continue;
+      if (marker.label === 'workshop' && OFFICIAL_WORKSHOP_EXCEPTIONS.has(abbr)) continue;
+      return marker.label;
+    }
+    return null;
+  }
+
   /** CORE 的等级里只有这几档代表学术水平，其余（National/Regional/Unranked）不出徽章。 */
   const CORE_BADGE = {
     'A*': { text: 'A*', slug: 'astar' },
@@ -259,9 +288,19 @@
       const { names, acronyms, kind, truncated, preprintName } = venueCandidates(raw);
       const result = { kind, raw, truncated, preprintName };
       if (kind === 'normal') {
-        const ccf = this.findConf(this.ccf, names, acronyms, truncated);
+        let ccf = this.findConf(this.ccf, names, acronyms, truncated);
+        const ccfSecondary = ccf && secondaryTrackReason(raw, ccf.entry);
+        if (ccfSecondary) {
+          result.secondaryTrack = ccfSecondary;
+          ccf = null;
+        }
         if (ccf) { result.ccf = ccf.entry; result.via = ccf.via; }
-        const core = this.findConf(this.core, names, acronyms, truncated);
+        let core = this.findConf(this.core, names, acronyms, truncated);
+        const coreSecondary = core && secondaryTrackReason(raw, core.entry);
+        if (coreSecondary) {
+          result.secondaryTrack = result.secondaryTrack || coreSecondary;
+          core = null;
+        }
         if (core) { result.core = core.entry; result.coreVia = core.via; }
         const jr = this.findJournal(names, truncated);
         if (jr) { result.journal = jr.entry; result.matchedName = jr.matchedName; result.via = result.via || jr.via; }

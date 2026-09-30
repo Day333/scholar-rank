@@ -78,8 +78,7 @@
     "Conference on Robot Learning": "CoRL",
     "Conference on Empirical Methods in Natural Language Processing": "EMNLP",
     "ACM SIGMOD-SIGACT-SIGAI Symposium on Principles of Database Systems": "PODS",
-    "Symposium on Principles of Database Systems": "PODS",
-    "Findings of the Association for Computational Linguistics": "ACL"
+    "Symposium on Principles of Database Systems": "PODS"
   },
   "ccfToCoreComment": "上面两张表填的是 CCF 简称；同一个会议在 CORE 目录里简称不同的，在下表做一次翻译。",
   "ccfToCore": {

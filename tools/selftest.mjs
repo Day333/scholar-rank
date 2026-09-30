@@ -26,6 +26,9 @@ const CASES = [
   ['Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, 1-10', 'CCF A', 'CORE A*'],
   ['Proceedings of the IEEE/CVF International Conference on Computer Vision, 1-9', 'CCF A', 'CORE A*'],
   ['2023 IEEE International Conference on Robotics and Automation (ICRA), 123-130', 'CCF B', 'CORE A*'],
+  // 正式列入目录的 workshop 本身仍须正常标注，不能被二级轨道规则误伤
+  ['IEEE/ACM International Workshop on Quality of Service, 2024', 'CCF B', 'CORE B'],
+  ['USENIX Workshop on Hot Topics in Storage and File Systems, 2024', 'CCF C'],
   ['Advances in Neural Information Processing Systems 36, 1-12', 'ML三大顶会', 'CCF A', 'CORE A*'],
   ['Advances in Neural Information Processing System (NeurIPS 2026)', 'ML三大顶会', 'CCF A', 'CORE A*'],
   // tags.json 里的自定义标记
@@ -81,6 +84,13 @@ const NEGATIVE = [
   'IEEE Transactions on …',
   'Proceedings of the …',
   'Journal of …',
+  // 主会附属轨道不能继承主会等级
+  'Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops, 2024',
+  'CVPR 2024 Workshops, 1-8',
+  'Findings of the Association for Computational Linguistics: EMNLP 2024',
+  'Companion Proceedings of the ACM Web Conference 2024',
+  'Extended Abstracts of the 2024 CHI Conference on Human Factors in Computing Systems',
+  'CVPR 2024 Demo Track',
 ];
 
 // [出处原文, 不允许出现的徽章前缀...]

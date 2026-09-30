@@ -95,7 +95,7 @@ CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `n
 ## 测试
 
 ```bash
-npm test                  # 73 项断言，含学位论文/截断歧义/标记误报和统计筛选用例
+npm test                  # 81 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
 npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 ```
 
