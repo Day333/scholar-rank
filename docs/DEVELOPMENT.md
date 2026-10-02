@@ -54,10 +54,20 @@ Scholar 上的出处写法非常不统一，所以匹配分五步，见
    名称内部，比对时保留虚词（`on Pattern Analysis` 对不上 `Pattern Analysis and Applications`）；
    CCF / CORE / 期刊库三套数据一起看，任何一套里对得上不止一个出处就都不认
    （`… on Image Processing` 既是 TIP 也是 ICIP）。
+   截断后剩下的词恰好是某个完整名称时也不能直接认：`Information …` 更可能是 Information Sciences
+   而不是期刊 Information，只有没有别的名称以它开头才算精确匹配。省略号跟在卷期页码后面
+   （`… Intelligence 38 (5), 4321 …`）说明截掉的只是页码，不受这条限制。
 5. **模糊兜底** —— 会议全称仍然对不上时，用 token 集合包含度（≥0.85）做模糊匹配；
    另有 [src/data/aliases.json](../src/data/aliases.json) 手工兜住
    `Advances in Neural Information Processing Systems → NeurIPS`、
    `Proceedings of the ACM on Management of Data → SIGMOD` 这类硬骨头。
+
+**截断到认不出时的补全**（[src/content/scholar.js](../src/content/scholar.js)）：搜索结果里的出处可能被截得
+只剩 `Information …`，上面几步都认不出。这时用结果条目上的 `data-cid` 请求 Scholar 的「引用」接口
+（`/scholar?q=info:<cid>:scholar.google.com/&output=cite`），取 MLA 格式里的斜体作为完整出处再查一遍。
+只对「被截断且三套数据都对不上」的条目请求，串行、间隔 400ms，结果按标签页缓存在 `sessionStorage`；
+一旦取不到引用格式（验证码 / 限流），本页不再尝试。取回的出处必须包含页面上那段被截断的文字才采用
+（图书条目的斜体是书名）。设置项 `resolveTruncated` 可关闭。
 
 CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `names` / `acronyms` 里填的是 CCF 简称，
 `ccfToCore` 负责翻译成 CORE 的写法（`SIGKDD → KDD`、`S&P → SP`、`ACM MM → ACMMM` 等），
@@ -100,7 +110,7 @@ CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `n
 ## 测试
 
 ```bash
-npm test                  # 98 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
+npm test                  # 109 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
 npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 ```
 
@@ -123,6 +133,9 @@ npm run serve
 | <http://localhost:8123/test/fixture.html> | 复刻 Scholar 论文列表 / 搜索结果的 DOM，跑真实的 content script |
 | <http://localhost:8123/src/options/options.html?shim=1> | 设置页 |
 | <http://localhost:8123/src/popup/popup.html?shim=1> | 工具栏弹窗 |
+
+预览服务器还模拟了 Scholar 的「引用」接口：`/scholar?q=info:<cid>:…&output=cite` 返回
+`test/cite/<cid>.html`，fixture 里带 `data-cid` 的两条结果用它演示截断出处的补全。
 
 `?shim=1` 会让预览服务器注入 `test/chrome-shim.js`（一套最小的假 `chrome.*` API，
 用 `localStorage` 顶替 `chrome.storage.sync`），只在预览时生效，不参与打包。

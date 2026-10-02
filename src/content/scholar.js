@@ -10,6 +10,7 @@
   'use strict';
 
   const MARK = 'srDone';           // dataset 标记，避免重复注入
+  const PENDING = 'srPending';     // dataset 标记，正在等完整刊名
   const CONTAINER_CLASS = 'sr-badges';
   const STATS_PANEL_CLASS = 'sr-stats-panel';
 
@@ -361,8 +362,85 @@
       if (meta.dataset[MARK]) continue;
       const venues = SRNorm.venuesFromByline(venueTextOf(meta));
       if (!venues.length) { meta.dataset[MARK] = '1'; continue; }
-      inject(meta, venues, meta, false);
+      const cid = settings.resolveTruncated && truncatedUnmatched(venues) && citeIdOf(meta);
+      if (!cid) { inject(meta, venues, meta, false); continue; }
+
+      // 先占位，免得请求返回之前被重复处理；ticket 用来作废设置变更前发出的旧请求。
+      meta.dataset[MARK] = '1';
+      const ticket = meta.dataset[PENDING] = String(++pendingSeq);
+      fullVenueOf(cid).then((full) => {
+        if (!meta.isConnected || meta.dataset[PENDING] !== ticket) return;
+        delete meta.dataset[PENDING];
+        delete meta.dataset[MARK];
+        const usable = full && venues.some((v) => ranking.lookup(v).truncated && SRNorm.completesTruncated(full, v));
+        inject(meta, usable ? [full, ...venues] : venues, meta, false);
+      });
     }
+  }
+
+  // ---- 2b. 截断出处补全 ----
+  // 作者一多，.gs_a 里的出处会被截成 "Information …"，光凭剩下的词认不出是哪本刊。
+  // 每条结果的「引用」浮层里有完整刊名，这里替用户取一次：走页面同源的接口，串行、带间隔，
+  // 结果按标签页缓存；一旦取不到（验证码 / 限流），本页就不再尝试。
+  const CITE_GAP_MS = 400;
+  const CITE_STORE_PREFIX = 'sr-cite:';
+  const citeJobs = new Map();      // cid -> Promise<string>，取不到时为空串
+  let citeTail = Promise.resolve();
+  let citeBlocked = false;
+  let pendingSeq = 0;
+
+  /** 出处被截断、且现有信息在三套数据里都对不上时，才值得去取完整刊名。 */
+  function truncatedUnmatched(venues) {
+    let truncated = false;
+    for (const v of venues) {
+      const r = ranking.lookup(v);
+      if (r.kind !== 'normal' || r.ccf || r.core || r.journal) return false;
+      if (r.truncated) truncated = true;
+    }
+    return truncated;
+  }
+
+  function citeIdOf(meta) {
+    const result = meta.closest('[data-cid]');
+    const cid = result ? result.dataset.cid : '';
+    return /^[\w-]+$/.test(cid) ? cid : '';
+  }
+
+  async function fetchCiteVenue(cid) {
+    if (citeBlocked) return '';
+    try {
+      const res = await fetch(`/scholar?q=info:${cid}:scholar.google.com/&output=cite&scirp=0&hl=en`, { credentials: 'same-origin' });
+      const doc = res.ok ? new DOMParser().parseFromString(await res.text(), 'text/html') : null;
+      const formats = doc ? [...doc.querySelectorAll('.gs_citr')] : [];
+      // 一条引用格式都没有，说明被 Scholar 拦下了，继续请求只会更糟。
+      if (!formats.length) { citeBlocked = true; return ''; }
+      // MLA 排在最前，刊名 / 会议名是其中唯一的斜体；GB/T 7714 没有斜体，跳过。
+      const italic = formats.map((f) => f.querySelector('i')).find(Boolean);
+      return italic ? italic.textContent.replace(/\s+/g, ' ').trim() : '';
+    } catch (err) {
+      citeBlocked = true;
+      return '';
+    }
+  }
+
+  function fullVenueOf(cid) {
+    if (citeJobs.has(cid)) return citeJobs.get(cid);
+    let stored = null;
+    try { stored = sessionStorage.getItem(CITE_STORE_PREFIX + cid); } catch (err) { /* 存储不可用就每次都取 */ }
+    let job;
+    if (stored !== null) {
+      job = Promise.resolve(stored);
+    } else {
+      job = citeTail.then(() => fetchCiteVenue(cid)).then((venue) => {
+        if (!citeBlocked) {
+          try { sessionStorage.setItem(CITE_STORE_PREFIX + cid, venue); } catch (err) { /* 同上 */ }
+        }
+        return venue;
+      });
+      citeTail = job.then(() => (citeBlocked ? null : shortDelay(CITE_GAP_MS)));
+    }
+    citeJobs.set(cid, job);
+    return job;
   }
 
   // ---- 3. 单篇论文详情浮层 ----
@@ -407,6 +485,7 @@
     document.querySelectorAll('.' + STATS_PANEL_CLASS).forEach((el) => el.remove());
     document.querySelectorAll('.sr-row-filtered-out').forEach((el) => el.classList.remove('sr-row-filtered-out'));
     document.querySelectorAll('[data-sr-done]').forEach((el) => delete el.dataset[MARK]);
+    document.querySelectorAll('[data-sr-pending]').forEach((el) => delete el.dataset[PENDING]);
   }
 
   function observe() {

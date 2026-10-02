@@ -44,7 +44,9 @@
 
 几个特点：
 
-- **全离线**。所有数据都打包在扩展里，不联网、不上传任何浏览数据，也不需要注册或 API Key。
+- **全离线**。所有数据都打包在扩展里，不上传任何浏览数据，也不需要注册或 API Key。
+  唯一会发出的请求是向 Scholar 自己：搜索结果里出处被截成 `Information …` 又认不出时，
+  取一次该条目的「引用」格式来拿完整刊名（相当于替你点了「引用」），可在设置里关掉。
 - **匹配够扎实**。Google Scholar 的出处写法极不统一（`Journal of machine learning research 12, 2825-2830`、
   `ICASSP 2015-2015 IEEE International Conference on Acoustics, Speech and …`、
   `Proceedings of the ACM on Management of Data`），扩展会剥掉卷期页码和各种前后缀再匹配，
@@ -109,7 +111,7 @@
   这样最容易定位问题。
 - 🔧 [提 PR](../../pulls) —— 补别名、加标记分组、修 Bug、加新网站支持都欢迎。
   大部分漏标只要往 `src/data/aliases.json` 补一行就能修好，不用动代码；
-  仓库带了 98 项回归测试，改完跑一下 `npm test` 即可。细节见
+  仓库带了 109 项回归测试，改完跑一下 `npm test` 即可。细节见
   [开发说明](docs/DEVELOPMENT.md)。
 
 如果觉得好用，点个 ⭐ 就是最大的支持。
