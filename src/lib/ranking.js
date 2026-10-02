@@ -6,7 +6,7 @@
 (function (root) {
   'use strict';
 
-  const { normalizeName, venueCandidates } = root.SRNorm;
+  const { normalizeName, nameTokens, venueCandidates } = root.SRNorm;
 
   // 与 normalizeName 保持同一套切词规则，但保留 token 便于做模糊匹配。
   function tokensOf(name) {
@@ -125,6 +125,7 @@
       const byAbbrAll = new Map();   // 同一简称可能对应多个会议（如 FSE 有软工和密码学两个）
       const byKey = new Map();
       const fuzzy = [];
+      const named = [];              // [名称原文, 条目]，开头被截断的出处要拿片段去名称内部找
       const addKey = (name, entry) => {
         const key = normalizeName(name);
         if (key && key.length >= 4 && !byKey.has(key)) byKey.set(key, entry);
@@ -141,6 +142,7 @@
         // CORE 的条目名常带后缀说明，如 "Advances in ... (was NIPS)"，去掉再索引一次。
         const bare = String(e.name || '').replace(/\s*\([^()]*\)\s*$/, '');
         if (bare !== e.name) addKey(bare, e);
+        named.push([bare, e]);
         // 简称本身也可能被当成刊名写在出处里（如 "TOSEM"）
         addKey(e.abbr, e);
         const toks = tokensOf(e.name);
@@ -168,6 +170,7 @@
         if (!e) { if (report) this.missingAliases.push(`names/${name} -> ${abbr}`); continue; }
         const key = normalizeName(name);
         if (key) byKey.set(key, e);
+        named.push([name, e]);
       }
       for (const [from, abbr] of Object.entries(aliasData.acronyms || {})) {
         const e = resolve(abbr, null);
@@ -180,9 +183,50 @@
         if (!list || !list.length) { this.missingAliases.push(`coreNames/${name} -> ${abbr}`); continue; }
         const key = normalizeName(name);
         if (key) byKey.set(key, list[0]);
+        named.push([name, list[0]]);
       }
 
-      return { byAbbr, byKey, fuzzy };
+      return {
+        byAbbr, byKey, fuzzy,
+        prefixPairs: Ranking.prefixPairs(byKey),
+        // CCF 目录里混着期刊（type=journal）；CORE 只有会议，没有 type 字段。
+        infixItems: Ranking.infixItems(named, (e) => e.type === 'journal'),
+      };
+    }
+
+    /**
+     * 片段匹配用的索引：保留虚词的 token 序列。
+     * minStart 是片段在名称里允许出现的最早位置——期刊名前面不会再套别的东西，开头被截掉
+     * 说明片段前面至少还有一个词；会议出处常带 "Proceedings of the 29th" 这类包装，
+     * 被截掉的可能只是包装，所以允许从名称第一个词开始。
+     * @param {Iterable<[string, object]>} pairs 名称原文 -> 条目
+     * @param {(entry:object)=>boolean} isJournal
+     */
+    static infixItems(pairs, isJournal) {
+      const out = [];
+      for (const [name, entry] of pairs) {
+        const tokens = nameTokens(name);
+        if (tokens.length) out.push({ tokens, entry, minStart: isJournal(entry) ? 1 : 0 });
+      }
+      return out;
+    }
+
+    /**
+     * 截断匹配同时考虑省略出版机构/刊物前缀的名称。
+     * 这些派生写法只参与前缀消歧，不覆盖正式名称的精确索引。
+     * 保留一对多条目，避免 Pattern Analysis… 只看到 PAA 而遗漏 TPAMI。
+     */
+    static prefixPairs(pairs) {
+      const out = [...pairs];
+      const seen = new Set();
+      for (const [, entry] of out.slice()) {
+        if (seen.has(entry)) continue;
+        seen.add(entry);
+        const name = String(entry.name || entry.n || '');
+        const short = name.replace(/^(?:(?:IEEE|ACM)(?:\s*\/\s*(?:IEEE|ACM))?\s+)?(?:Transactions|Trans\.?|Journal|J\.?|Proceedings|Proc\.?|Letters)\s+(?:on|of|in)\s+/i, '');
+        if (short !== name) out.push([normalizeName(short), entry]);
+      }
+      return out;
     }
 
     /** token 集合包含度：|交集| / |较小集合| */
@@ -201,7 +245,8 @@
     static uniquePrefixMatch(pairs, key) {
       let hit = null;
       for (const [k, e] of pairs) {
-        if (k.length <= key.length || !k.startsWith(key)) continue;
+        // 派生短名即使恰好等于输入片段，也必须参与消歧。
+        if (!k.startsWith(key)) continue;
         if (hit && hit !== e) return null;   // 前缀不唯一，宁可不认
         hit = e;
       }
@@ -209,28 +254,93 @@
     }
 
     /**
+     * 开头被截断的出处（"… on Pattern Analysis and …"）剩下的是名称中间或末尾的一段：
+     * 找出所有把该片段作为连续词序列包含在内的条目。
+     * @param {Array<{tokens:string[], entry:object, minStart:number}>} items 见 infixItems
+     * @param {string[]} frag    片段的 token 序列（含虚词）
+     * @param {boolean} openEnd  后半段是否也被截断；否则片段必须正好收在名称末尾
+     * @returns {object[]} 去重后的条目
+     */
+    static infixMatches(items, frag, openEnd) {
+      const n = frag.length;
+      const out = [];
+      for (const { tokens, entry, minStart } of items) {
+        const last = tokens.length - n;
+        let found = false;
+        for (let p = openEnd ? minStart : Math.max(minStart, last); p <= last && !found; p++) {
+          found = true;
+          for (let i = 0; i < n && found; i++) {
+            // 后半段被截断时，最后一个词可能只剩半截（"Sec…"）
+            found = openEnd && i === n - 1 ? tokens[p + i].startsWith(frag[i]) : tokens[p + i] === frag[i];
+          }
+        }
+        // 同一本期刊在数据集里可能以新旧两个刊名各收一条，按 ISSN 算同一个
+        if (found && !out.some((e) => e === entry || (e.issn && e.issn === entry.issn))) out.push(entry);
+      }
+      return out;
+    }
+
+    /**
+     * 开头被截断的出处走片段匹配，三套数据一起看：任何一套里对得上不止一个出处，就说明
+     * 片段本身有歧义（"… on Image Processing" 既是 TIP 也是 ICIP），三套都不认。
+     * @returns {{ccf:?object, core:?object, journal:?object}|null} 各套数据里唯一命中的条目
+     */
+    findFragment(names, openEnd) {
+      if (!this.journalInfix) {
+        this.journalInfix = Ranking.infixItems(Object.values(this.journals).map((rec) => [rec.n, rec]), () => true);
+      }
+      const pick = (list) => (list.length === 1 ? { entry: list[0], via: '截断片段匹配' } : null);
+      for (const n of names) {
+        if (normalizeName(n).length < this.options.minPrefixLength) continue;
+        const frag = nameTokens(n);
+        const [ccf, core, journal] = [this.ccf.infixItems, this.core.infixItems, this.journalInfix]
+          .map((items) => Ranking.infixMatches(items, frag, openEnd));
+        // 期刊库里只数正式期刊：EI 目录带进来的会议录没有 ISSN，名称又常与会议目录重复，不算歧义。
+        if (ccf.length > 1 || core.length > 1 || journal.filter((rec) => rec.issn).length > 1) continue;
+        const hit = { ccf: pick(ccf), core: pick(core), journal: pick(journal) };
+        if (hit.ccf || hit.core || hit.journal) return hit;
+      }
+      return null;
+    }
+
+    /**
+     * 片段在期刊库里唯一，不代表它就是会议目录认出的那个出处："… and Pattern Recognition"
+     * 在期刊库里只对得上一个冷门会议录，实际是 CVPR。名称登记在同一条目下，或 token 基本重合才算同一个。
+     */
+    static sameVenue(index, entry, rec) {
+      if (index.byKey.get(normalizeName(rec.n)) === entry) return true;
+      return Ranking.containment(new Set(tokensOf(rec.n)), new Set(tokensOf(entry.name))) >= 0.85;
+    }
+
+    /**
      * 在一套会议索引里查。顺序是「全称精确 → 简称 → 截断前缀 → 全称模糊」——
      * 全称比三四个字母的简称可靠得多，简称在两套目录之间还会撞车（如 ATC）。
+     * @param {{head:boolean, tail:boolean}|null} cut 出处被省略号截断的位置，未截断为 null
      */
-    findConf(index, names, acronyms, truncated) {
+    findConf(index, names, acronyms, cut) {
       if (!index) return null;
       for (const n of names) {
         const key = normalizeName(n);
         if (key.length < this.options.minKeyLength) continue;
         const e = index.byKey.get(key);
-        if (e) return { entry: e, via: '全称精确匹配' };
+        // 开头被截掉的片段恰好等于某本期刊的全名时不能认：
+        // "… and Pattern Recognition" 是 CVPR 的尾巴，不是 Pattern Recognition。
+        if (e && !(cut && cut.head && e.type === 'journal')) return { entry: e, via: '全称精确匹配' };
       }
       for (const a of acronyms) {
         const e = index.byAbbr.get(a);
         if (e) return { entry: e, via: `简称 ${a}` };
       }
-      if (truncated) {
-        for (const n of names) {
+      if (cut) {
+        // 开头被截断的片段不是前缀，交给 findFragment 三套数据一起判。
+        for (const n of cut.head ? [] : names) {
           const key = normalizeName(n);
           if (key.length < this.options.minPrefixLength) continue;
-          const e = Ranking.uniquePrefixMatch(index.byKey, key);
+          const e = Ranking.uniquePrefixMatch(index.prefixPairs, key);
           if (e) return { entry: e, via: '截断前缀匹配' };
         }
+        // 不允许模糊匹配重新猜测已经无法唯一确定的截断出处。
+        return null;
       }
       if (!this.options.fuzzyConf) return null;
       // 会议名在 Scholar 上常带届次 / 主办方前后缀，退化到 token 包含度匹配。
@@ -247,15 +357,18 @@
       return best;
     }
 
-    findJournal(names, truncated) {
+    /** @param {{head:boolean, tail:boolean}|null} cut 同 findConf */
+    findJournal(names, cut) {
+      // 开头被截掉的片段既不能精确匹配也不是前缀，理由同 findConf。
+      if (cut && cut.head) return null;
       for (const n of names) {
         const key = normalizeName(n);
         if (key.length < this.options.minKeyLength) continue;
         const rec = this.journals[key];
         if (rec) return { entry: rec, matchedName: n, via: '全称精确匹配' };
       }
-      if (!truncated) return null;
-      if (!this.journalPairs) this.journalPairs = Object.entries(this.journals);
+      if (!cut) return null;
+      if (!this.journalPairs) this.journalPairs = Ranking.prefixPairs(Object.entries(this.journals));
       for (const n of names) {
         const key = normalizeName(n);
         if (key.length < this.options.minPrefixLength) continue;
@@ -285,24 +398,31 @@
       const raw = String(venue || '').trim();
       if (this.cache.has(raw)) return this.cache.get(raw);
 
-      const { names, acronyms, kind, truncated, preprintName } = venueCandidates(raw);
+      const { names, acronyms, kind, truncated, truncatedHead, truncatedTail, preprintName } = venueCandidates(raw);
       const result = { kind, raw, truncated, preprintName };
+      const cut = truncated ? { head: truncatedHead, tail: truncatedTail } : null;
       if (kind === 'normal') {
-        let ccf = this.findConf(this.ccf, names, acronyms, truncated);
+        const frag = (cut && cut.head && this.findFragment(names, cut.tail)) || {};
+        let ccf = this.findConf(this.ccf, names, acronyms, cut) || frag.ccf;
         const ccfSecondary = ccf && secondaryTrackReason(raw, ccf.entry);
         if (ccfSecondary) {
           result.secondaryTrack = ccfSecondary;
           ccf = null;
         }
         if (ccf) { result.ccf = ccf.entry; result.via = ccf.via; }
-        let core = this.findConf(this.core, names, acronyms, truncated);
+        let core = this.findConf(this.core, names, acronyms, cut) || frag.core;
         const coreSecondary = core && secondaryTrackReason(raw, core.entry);
         if (coreSecondary) {
           result.secondaryTrack = result.secondaryTrack || coreSecondary;
           core = null;
         }
         if (core) { result.core = core.entry; result.coreVia = core.via; }
-        const jr = this.findJournal(names, truncated);
+        let jr = this.findJournal(names, cut);
+        if (!jr && frag.journal
+          && (!ccf || Ranking.sameVenue(this.ccf, ccf.entry, frag.journal.entry))
+          && (!core || Ranking.sameVenue(this.core, core.entry, frag.journal.entry))) {
+          jr = { entry: frag.journal.entry, matchedName: frag.journal.entry.n, via: frag.journal.via };
+        }
         if (jr) { result.journal = jr.entry; result.matchedName = jr.matchedName; result.via = result.via || jr.via; }
         result.tags = this.findTags(names, result.ccf, result.core);
         if (!result.matchedName) {

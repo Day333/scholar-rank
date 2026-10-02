@@ -63,15 +63,23 @@
    *  -> ieeetransactionspatternanalysismachineintelligence
    */
   function normalizeName(input) {
-    if (!input) return '';
+    return nameTokens(input).filter((t) => !STOPWORDS.has(t)).join('');
+  }
+
+  /**
+   * 与 normalizeName 同一套切词，但保留虚词、不拼接。
+   *
+   * 开头被截断的出处只剩名称中间的一段，这时虚词是重要的定位线索：
+   * "on Pattern Analysis and" 只可能出自 IEEE Transactions on Pattern Analysis and Machine
+   * Intelligence，而不是 Pattern Analysis and Applications。
+   */
+  function nameTokens(input) {
+    if (!input) return [];
     let s = deburr(String(input)).toLowerCase();
     s = s.replace(/&/g, ' and ');
     s = s.replace(/[^a-z0-9]+/g, ' ').trim();
-    if (!s) return '';
-    const tokens = s.split(' ')
-      .map((t) => ABBREV.get(t) ?? t)
-      .filter((t) => t && !STOPWORDS.has(t));
-    return tokens.join('');
+    if (!s) return [];
+    return s.split(' ').map((t) => ABBREV.get(t) ?? t).filter(Boolean);
   }
 
   const PREFIXES = [
@@ -130,6 +138,8 @@
         .replace(/[\s,]+\(?\d+[\d\s\-/]*\)?$/, '')
         .replace(/[\s,]+\(\s*\d+[^()]*\)$/, '')
         .replace(/[\s,]+(vol|volume|no|issue|pp|p)\.?\s*\d+.*$/i, '')
+        // IEEE Early Access 还没有卷号，Scholar 上显示成 "… Intelligence PP (99), 1-1"
+        .replace(/\s+PP$/, '')
         .trim();
     }
     return out;
@@ -177,13 +187,19 @@
    *   2023 IEEE International Conference on Robotics and Automation (ICRA), 123-130
    *   Proceedings of the IEEE/CVF Conference on Computer Vision ..., 1-10
    *
-   * 返回 { names, acronyms, kind, truncated }，names 按可信度从高到低排序。
+   * 返回 { names, acronyms, kind, truncated, truncatedHead, truncatedTail }，names 按可信度从高到低排序。
    * truncated 表示原串被 Scholar 用省略号截断过——此时全称一定对不上，需要前缀匹配兜底。
+   * truncatedHead / truncatedTail 区分截掉的是开头还是后半段："… on Pattern Analysis and …"
+   * 两头都被截，剩下的是名称中间的一段，不能再当前缀去匹配。
    */
   function venueCandidates(raw) {
     const kind = classifyVenue(raw);
-    const truncated = /…|\.{3}/.test(String(raw || ''));
-    const result = { names: [], acronyms: [], kind, truncated };
+    const src = String(raw || '');
+    const body = src.replace(/^\s*(?:…|\.{3})/, '');
+    const truncated = /…|\.{3}/.test(src);
+    const truncatedHead = body !== src;
+    const truncatedTail = /…|\.{3}/.test(body);
+    const result = { names: [], acronyms: [], kind, truncated, truncatedHead, truncatedTail };
     if (kind === 'preprint') result.preprintName = preprintSource(raw);
     if (kind !== 'normal') return result;
 
@@ -269,7 +285,7 @@
   }
 
   root.SRNorm = {
-    normalizeName, venueCandidates, venuesFromByline,
+    normalizeName, nameTokens, venueCandidates, venuesFromByline,
     classifyVenue, preprintSource, stripWrappers, stripTrailingNumerics,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

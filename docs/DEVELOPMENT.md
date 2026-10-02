@@ -49,6 +49,11 @@ Scholar 上的出处写法非常不统一，所以匹配分五步，见
 4. **截断兜底** —— Scholar 会把过长的出处截成 `… `，此时全称一定对不上。检测到省略号就退到
    **唯一前缀匹配**：找出所有以该 key 开头的条目，只有唯一命中才认。截到只剩
    `IEEE Transactions on …` 这种共同前缀时前缀不唯一，宁可不出徽章也不瞎猜。
+   作者一多，Scholar 连出处的开头也会截掉（`… on Pattern Analysis and …`），剩下的是名称
+   中间的一段，既不能当前缀也不能精确匹配，改走**片段匹配**：片段必须作为连续的词序列出现在
+   名称内部，比对时保留虚词（`on Pattern Analysis` 对不上 `Pattern Analysis and Applications`）；
+   CCF / CORE / 期刊库三套数据一起看，任何一套里对得上不止一个出处就都不认
+   （`… on Image Processing` 既是 TIP 也是 ICIP）。
 5. **模糊兜底** —— 会议全称仍然对不上时，用 token 集合包含度（≥0.85）做模糊匹配；
    另有 [src/data/aliases.json](../src/data/aliases.json) 手工兜住
    `Advances in Neural Information Processing Systems → NeurIPS`、
@@ -95,7 +100,7 @@ CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `n
 ## 测试
 
 ```bash
-npm test                  # 81 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
+npm test                  # 98 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
 npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 ```
 

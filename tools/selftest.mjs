@@ -70,6 +70,18 @@ const CASES = [
   ['CVPR 2024 - 2024 IEEE/CVF Conference on Computer Vision and Pattern …', 'CCF A', 'CORE A*'],
   ['IEEE Transactions on Information Forensics and Sec…', 'CCF A', 'SCI升级版 计算机科学1区'],
   ['Proceedings of the 61st Annual Meeting of the Association for Computational …', 'CCF A', 'CORE A*'],
+  // 作者一多，Scholar 连出处的开头也会截掉，剩下的是名称中间一段：按片段匹配，不能当前缀
+  ['… on Pattern Analysis and Machine Intelligence', 'CCF A', '计算机科学TOP', 'SCI升级版 计算机科学1区'],
+  ['… on Pattern Analysis and …', 'CCF A', '计算机科学TOP', 'SCI升级版 计算机科学1区'],
+  ['… Pattern Analysis and …', 'CCF A', '计算机科学TOP', 'SCI升级版 计算机科学1区'],
+  ['… on Information Forensics and Sec…', 'CCF A', 'SCI升级版 计算机科学1区'],
+  ['… Vision and Pattern Recognition', 'CCF A', 'CORE A*'],
+  ['… ACM SIGKDD Conference on Knowledge Discovery and Data …', 'CCF A', 'CORE A*'],
+  // IEEE Early Access 没有卷号，卷的位置写的是 PP
+  ['IEEE Transactions on Pattern Analysis and Machine Intelligence PP (99), 1-18', 'CCF A', 'SCI升级版 计算机科学1区'],
+  // PAA 自己不能被上面的规则误伤
+  ['Pattern Analysis and Applications 27 (1), 12', 'CCF C', 'SCI升级版 计算机科学4区'],
+  ['Pattern Analysis and Applic…', 'CCF C', 'SCI升级版 计算机科学4区'],
   // CORE 简称与 CCF 不一致，靠 aliases.ccfToCore 桥接
   ['Proceedings of the 31st ACM International Conference on Multimedia, 1-10', 'CCF A', 'CORE A*'],
   ['2023 IEEE Symposium on Security and Privacy (SP), 1-19', 'CCF A', 'CORE A*'],
@@ -84,6 +96,13 @@ const NEGATIVE = [
   'IEEE Transactions on …',
   'Proceedings of the …',
   'Journal of …',
+  // PAA 与倒装写法的 TPAMI（Pattern Analysis and Machine Intelligence, IEEE Transactions on）共用这个开头
+  'Pattern Analysis and …',
+  // 开头被截掉后剩下的片段对得上不止一个出处：TIP / ICIP、ICCV / ECCV / ACCV、TPAMI / Nature MI
+  '… on Image Processing',
+  '… Conference on Computer Vision',
+  '… Machine Intelligence',
+  '… Analysis …',
   // 主会附属轨道不能继承主会等级
   'Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops, 2024',
   'CVPR 2024 Workshops, 1-8',
@@ -104,6 +123,10 @@ const FORBIDDEN = [
   // MDM 的全称和 SIGMOD 会议录只差几个词，早先会被模糊匹配吃掉
   ['2022 IEEE International Conference on Mobile Data Management (MDM), 1-6', '数据库四大'],
   ['Proceedings of the 2023 International Conference on Management of Data, 100-112', 'CCF C'],
+  // TPAMI 被截得只剩中间一段时，早先会按前缀唯一命中 PAA（CCF C / 4 区）
+  ['… on Pattern Analysis and …', 'CCF C', 'SCI升级版 计算机科学4区'],
+  // CVPR 的尾巴恰好等于期刊 Pattern Recognition（CCF B）的全名
+  ['… and Pattern Recognition', 'CCF B', 'SCI', 'IF '],
 ];
 
 // 搜索结果页的 .gs_a 整行文本 -> 必须出现的徽章前缀。
@@ -123,6 +146,9 @@ const BYLINES = [
   // 会议全称很长且带年份
   [`JS Park, J O'Brien, CJ Cai…${NB}-${NB}Proceedings of the 36th annual ACM symposium on user interface software and technology, 2023${NB}-${NB}dl.acm.org`,
     'CCF A', 'CORE A*'],
+  // 出处两头都被截断
+  [`Y Yan, S Zheng, Z Zhu, D Chen, W Zhang…${NB}-${NB}… on Pattern Analysis and …, 2026${NB}-${NB}ieeexplore.ieee.org`,
+    'CCF A', '计算机科学TOP', 'SCI升级版 计算机科学1区'],
 ];
 
 // 这些 .gs_a 不该产生徽章（图书条目只有作者和年份）
