@@ -82,6 +82,11 @@ const CASES = [
   // PAA 自己不能被上面的规则误伤
   ['Pattern Analysis and Applications 27 (1), 12', 'CCF C', 'SCI升级版 计算机科学4区'],
   ['Pattern Analysis and Applic…', 'CCF C', 'SCI升级版 计算机科学4区'],
+  // 截断后剩下的恰好是完整名称，且没有别的名称以它开头：照常认
+  ['Information Sciences …', 'CCF B', 'SCI升级版 计算机科学2区'],
+  ['Proceedings of the IEEE/CVF conference on computer vision and pattern recognition …', 'CCF A', 'CORE A*'],
+  // 省略号跟在卷期页码后面，截掉的只是页码
+  ['Proceedings of the AAAI Conference on Artificial Intelligence 38 (5), 4321 …', 'CCF A', 'CORE A*'],
   // CORE 简称与 CCF 不一致，靠 aliases.ccfToCore 桥接
   ['Proceedings of the 31st ACM International Conference on Multimedia, 1-10', 'CCF A', 'CORE A*'],
   ['2023 IEEE Symposium on Security and Privacy (SP), 1-19', 'CCF A', 'CORE A*'],
@@ -103,6 +108,11 @@ const NEGATIVE = [
   '… Conference on Computer Vision',
   '… Machine Intelligence',
   '… Analysis …',
+  // 名称没写完，剩下的词恰好是另一本期刊的全名：Information Sciences / Fusion ≠ Information，
+  // Nature Communications ≠ Nature，Pattern Recognition Letters ≠ Pattern Recognition
+  'Information …',
+  'Nature …',
+  'Pattern Recognition …',
   // 主会附属轨道不能继承主会等级
   'Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops, 2024',
   'CVPR 2024 Workshops, 1-8',
@@ -127,6 +137,8 @@ const FORBIDDEN = [
   ['… on Pattern Analysis and …', 'CCF C', 'SCI升级版 计算机科学4区'],
   // CVPR 的尾巴恰好等于期刊 Pattern Recognition（CCF B）的全名
   ['… and Pattern Recognition', 'CCF B', 'SCI', 'IF '],
+  // 可能是 Artificial Intelligence Review / in Medicine，不能按期刊 Artificial Intelligence（CCF A）标
+  ['Artificial Intelligence …', 'CCF', 'SCI', 'IF '],
 ];
 
 // 搜索结果页的 .gs_a 整行文本 -> 必须出现的徽章前缀。
@@ -155,6 +167,8 @@ const BYLINES = [
 const BYLINES_EMPTY = [
   `I Goodfellow, Y Bengio, A Courville${NB}-${NB}2016${NB}-${NB}books.google.com`,
   'Some Author Without Any Separator',
+  // Information Sciences 被截得只剩第一个词，不能标成期刊 Information
+  `H Zhang, X Li, Y Wang, J Chen…${NB}-${NB}Information …, 2026${NB}-${NB}Elsevier`,
 ];
 
 let failed = 0;
@@ -272,6 +286,15 @@ checkStats(
     && statsSummary.firstAuthor === 2,
   'CCF、分区与一作汇总正确',
 );
+
+// 截断出处补全：从「引用」浮层取回的完整出处必须和页面上被截断的那段对得上
+const { completesTruncated } = globalThis.SRNorm;
+checkStats(completesTruncated('Information Sciences', 'Information …'), '完整刊名接得上被截断的开头');
+checkStats(
+  completesTruncated('IEEE Transactions on Pattern Analysis and Machine Intelligence', '… on Pattern Analysis and …'),
+  '完整刊名包含两头被截断的片段',
+);
+checkStats(!completesTruncated('Pattern recognition', 'Information …'), '对不上的斜体（如书名）不采用');
 
 if (rank.missingAliases.length) {
   failed++;

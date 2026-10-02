@@ -42,6 +42,7 @@
 
     // 其它
     showUnmatched: false,  // 未匹配到的出处也显示一个灰色标记（排查用）
+    resolveTruncated: true, // 搜索结果里出处被截断又认不出时，向 Scholar 取一次完整刊名
   };
 
   /** 把设置里的 theme 转成 CSS 类名，非法值回落到默认风格。 */

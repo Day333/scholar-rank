@@ -191,6 +191,8 @@
    * truncated 表示原串被 Scholar 用省略号截断过——此时全称一定对不上，需要前缀匹配兜底。
    * truncatedHead / truncatedTail 区分截掉的是开头还是后半段："… on Pattern Analysis and …"
    * 两头都被截，剩下的是名称中间的一段，不能再当前缀去匹配。
+   * truncatedName 表示省略号紧跟在单词后面，名称本身可能没写完（"Information …"）；
+   * 跟在卷期页码后面（"… Intelligence 38 (5), 4321 …"）则只是截掉了页码，名称是完整的。
    */
   function venueCandidates(raw) {
     const kind = classifyVenue(raw);
@@ -199,7 +201,8 @@
     const truncated = /…|\.{3}/.test(src);
     const truncatedHead = body !== src;
     const truncatedTail = /…|\.{3}/.test(body);
-    const result = { names: [], acronyms: [], kind, truncated, truncatedHead, truncatedTail };
+    const truncatedName = /\p{L}\s*(?:…|\.{3})/u.test(body);
+    const result = { names: [], acronyms: [], kind, truncated, truncatedHead, truncatedTail, truncatedName };
     if (kind === 'preprint') result.preprintName = preprintSource(raw);
     if (kind !== 'normal') return result;
 
@@ -240,9 +243,9 @@
       }
     }
 
-    // 整串本身就是缩写："CVPR" / "NeurIPS"
+    // 整串本身就是缩写："CVPR" / "NeurIPS"。被截断后剩下的单个词不算整串。
     const first = parts[0] || '';
-    if (/^[A-Za-z][A-Za-z0-9'&-]{1,11}$/.test(first)) pushAcronym(first);
+    if (!truncated && /^[A-Za-z][A-Za-z0-9'&-]{1,11}$/.test(first)) pushAcronym(first);
 
     result.names = names;
     result.acronyms = acronyms;
@@ -284,8 +287,17 @@
     return out;
   }
 
+  /**
+   * 从「引用」浮层取到的完整出处，是不是页面上那段被截断的出处写全之后的样子。
+   * 图书条目的斜体是书名而不是刊名，对不上的一律不用。
+   */
+  function completesTruncated(full, truncated) {
+    const part = normalizeName(truncated);
+    return part.length >= 3 && normalizeName(full).includes(part);
+  }
+
   root.SRNorm = {
-    normalizeName, nameTokens, venueCandidates, venuesFromByline,
+    normalizeName, nameTokens, venueCandidates, venuesFromByline, completesTruncated,
     classifyVenue, preprintSource, stripWrappers, stripTrailingNumerics,
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

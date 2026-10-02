@@ -315,7 +315,8 @@
     /**
      * 在一套会议索引里查。顺序是「全称精确 → 简称 → 截断前缀 → 全称模糊」——
      * 全称比三四个字母的简称可靠得多，简称在两套目录之间还会撞车（如 ATC）。
-     * @param {{head:boolean, tail:boolean}|null} cut 出处被省略号截断的位置，未截断为 null
+     * @param {{head:boolean, tail:boolean, name:boolean}|null} cut 出处被省略号截断的位置
+     *   （含义见 venueCandidates 的 truncatedHead / truncatedTail / truncatedName），未截断为 null
      */
     findConf(index, names, acronyms, cut) {
       if (!index) return null;
@@ -323,9 +324,14 @@
         const key = normalizeName(n);
         if (key.length < this.options.minKeyLength) continue;
         const e = index.byKey.get(key);
+        if (!e) continue;
         // 开头被截掉的片段恰好等于某本期刊的全名时不能认：
         // "… and Pattern Recognition" 是 CVPR 的尾巴，不是 Pattern Recognition。
-        if (e && !(cut && cut.head && e.type === 'journal')) return { entry: e, via: '全称精确匹配' };
+        if (cut && cut.head && e.type === 'journal') continue;
+        // 后半段被截掉时同理："Artificial Intelligence …" 也可能是 Artificial Intelligence Review，
+        // 只有没有别的名称以它开头才认。
+        if (cut && cut.name && Ranking.uniquePrefixMatch(index.prefixPairs, key) !== e) continue;
+        return { entry: e, via: '全称精确匹配' };
       }
       for (const a of acronyms) {
         const e = index.byAbbr.get(a);
@@ -357,18 +363,23 @@
       return best;
     }
 
-    /** @param {{head:boolean, tail:boolean}|null} cut 同 findConf */
+    /** @param {{head:boolean, tail:boolean, name:boolean}|null} cut 同 findConf */
     findJournal(names, cut) {
       // 开头被截掉的片段既不能精确匹配也不是前缀，理由同 findConf。
       if (cut && cut.head) return null;
+      // 前缀索引只在遇到截断出处时才建，两万多条刊名不必每次启动都过一遍。
+      if (cut && !this.journalPairs) this.journalPairs = Ranking.prefixPairs(Object.entries(this.journals));
       for (const n of names) {
         const key = normalizeName(n);
         if (key.length < this.options.minKeyLength) continue;
         const rec = this.journals[key];
-        if (rec) return { entry: rec, matchedName: n, via: '全称精确匹配' };
+        if (!rec) continue;
+        // "Information …" 截断后恰好等于期刊 Information 的全名，但它更可能是 Information Sciences /
+        // Information Fusion：名称没写完时，只有没有别的刊名以它开头才认。
+        if (cut && cut.name && Ranking.uniquePrefixMatch(this.journalPairs, key) !== rec) continue;
+        return { entry: rec, matchedName: n, via: '全称精确匹配' };
       }
       if (!cut) return null;
-      if (!this.journalPairs) this.journalPairs = Ranking.prefixPairs(Object.entries(this.journals));
       for (const n of names) {
         const key = normalizeName(n);
         if (key.length < this.options.minPrefixLength) continue;
@@ -398,9 +409,9 @@
       const raw = String(venue || '').trim();
       if (this.cache.has(raw)) return this.cache.get(raw);
 
-      const { names, acronyms, kind, truncated, truncatedHead, truncatedTail, preprintName } = venueCandidates(raw);
+      const { names, acronyms, kind, truncated, truncatedHead, truncatedTail, truncatedName, preprintName } = venueCandidates(raw);
       const result = { kind, raw, truncated, preprintName };
-      const cut = truncated ? { head: truncatedHead, tail: truncatedTail } : null;
+      const cut = truncated ? { head: truncatedHead, tail: truncatedTail, name: truncatedName } : null;
       if (kind === 'normal') {
         const frag = (cut && cut.head && this.findFragment(names, cut.tail)) || {};
         let ccf = this.findConf(this.ccf, names, acronyms, cut) || frag.ccf;

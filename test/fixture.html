@@ -205,6 +205,22 @@
         <div class="gs_rs">摘要片段……</div>
       </div>
     </div>
+    <!-- 出处被截得只剩一个词：靠 data-cid 去「引用」接口取完整刊名（预览服务器返回 test/cite/<cid>.html） -->
+    <div class="gs_r gs_or gs_scl" data-cid="fixtureInfoSci">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>Communication-efficient decentralized federated graph learning via knowledge distillation under dual heterogeneity</a></h3>
+        <div class="gs_a">A Author, B Author, C Author, D Author…&nbsp;-&nbsp;Information&nbsp;…, 2026&nbsp;-&nbsp;Elsevier</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
+    <!-- 取回来的斜体是书名，和截断的出处对不上：不用 -->
+    <div class="gs_r gs_or gs_scl" data-cid="fixtureBook">
+      <div class="gs_ri">
+        <h3 class="gs_rt"><a>[图书] An example book chapter</a></h3>
+        <div class="gs_a">A Author, B Author…&nbsp;-&nbsp;Information&nbsp;…, 2020&nbsp;-&nbsp;Springer</div>
+        <div class="gs_rs">摘要片段……</div>
+      </div>
+    </div>
   </div>
 
   <script src="chrome-shim.js"></script>

@@ -20,7 +20,11 @@ const SHIM = '<script src="/test/chrome-shim.js"></script>';
 
 createServer(async (req, res) => {
   const [path, query = ''] = req.url.split('?');
-  const url = decodeURIComponent(path);
+  let url = decodeURIComponent(path);
+  // 模拟 Scholar 的「引用」接口（/scholar?q=info:<cid>:scholar.google.com/&output=cite），
+  // 返回 test/cite/<cid>.html，用来预览截断出处的补全。
+  const cite = url === '/scholar' && /(?:^|&)q=info:([\w-]+):/.exec(decodeURIComponent(query));
+  if (cite) url = `/test/cite/${cite[1]}.html`;
   const rel = normalize(url === '/' ? '/test/fixture.html' : url).replace(/^([/\\])+/, '');
   const file = join(ROOT, rel);
   if (!file.startsWith(ROOT)) { res.writeHead(403).end('forbidden'); return; }
