@@ -17,10 +17,14 @@
     const clean = cleanPersonName(value);
     const tokens = clean.split(/\s+/).filter(Boolean);
     if (!tokens.length) return [];
-
-    const signatures = [{ compact: tokens.join(''), surname: tokens[tokens.length - 1], initial: tokens[0][0] }];
+    const uppercaseInitials = new Set((String(value).match(/\b[A-Z]{2,4}\b/g) || []).map((token) => token.toLowerCase()));
+    const signature = (surname, given) => ({
+      compact: tokens.join(''), surname, given: given.join(''), initials: given.map((token) => token[0]).join(''),
+      abbreviated: given.length > 0 && given.every((token) => token.length === 1 || uppercaseInitials.has(token)),
+    });
+    const signatures = [signature(tokens[tokens.length - 1], tokens.slice(0, -1))];
     if (tokens.length > 1) {
-      signatures.push({ compact: tokens.join(''), surname: tokens[0], initial: tokens[1][0] });
+      signatures.push(signature(tokens[0], tokens.slice(1)));
     }
     return signatures;
   }
@@ -94,14 +98,75 @@
     const right = personSignatures(b);
     if (!left.length || !right.length) return false;
     if (left[0].compact === right[0].compact) return true;
-    return left.some((x) => right.some((y) =>
-      x.surname === y.surname && x.initial && x.initial === y.initial));
+    return left.some((x) => right.some((y) => x.surname === y.surname && x.given && y.given && (
+      x.given === y.given
+      || (x.abbreviated && (y.abbreviated ? y.given : y.initials).startsWith(x.given))
+      || (y.abbreviated && (x.abbreviated ? x.given : x.initials).startsWith(y.given))
+    )));
   }
 
   function isFirstAuthor(authorLine, names) {
     const candidates = firstAuthorNames(authorLine);
     const aliases = profileNames(names);
     return candidates.some((candidate) => aliases.some((name) => samePerson(candidate, name)));
+  }
+
+  /** 保留姓名在原文中的位置，便于只标记姓名而不改写 Scholar 的链接。 */
+  function authorParts(authorLine) {
+    const text = String(authorLine || '');
+    const cut = text.search(/…|\.\.\.|\bet\s+al\b/i);
+    const visible = cut < 0 ? text : text.slice(0, cut);
+    return [...visible.matchAll(/[^,，;、]+/gu)].map((match) => {
+      const leading = match[0].length - match[0].trimStart().length;
+      const raw = match[0].trim();
+      return { name: raw, start: match.index + leading, end: match.index + leading + raw.length };
+    }).filter((part) => cleanPersonName(part.name));
+  }
+
+  function isLastAuthor(authorLine, names) {
+    // 省略号前的最后一个可见姓名不一定是末作。
+    if (/…|\.\.\.|\bet\s+al\b/i.test(String(authorLine || ''))) return false;
+    const parts = authorParts(authorLine);
+    const last = parts[parts.length - 1];
+    return !!last && profileNames(names).some((name) => samePerson(last.name, name));
+  }
+
+  function authorNameRanges(authorLine, names) {
+    const aliases = profileNames(names);
+    return authorParts(authorLine).filter((part) => aliases.some((name) => samePerson(part.name, name)));
+  }
+
+  function citationCount(value) {
+    const match = String(value ?? '').replace(/[,，\s]/gu, '').match(/^\d+/);
+    return match ? Number(match[0]) : 0;
+  }
+
+  function matchesYear(item, options) {
+    const year = Number(item.year);
+    if (options.startYear && (!year || year < Number(options.startYear))) return false;
+    if (options.endYear && (!year || year > Number(options.endYear))) return false;
+    return true;
+  }
+
+  /** 高亮角色取并集；分类、年份与角色之间取交集。 */
+  function matchesHighlight(item, options, names) {
+    if (!matchesYear(item, options)) return false;
+    if (!matchesFilter(item, options.category, names)) return false;
+    return (options.first && isFirstAuthor(item.authors, names))
+      || (options.last && isLastAuthor(item.authors, names)) || false;
+  }
+
+  function metrics(entries) {
+    // 一个条目即一篇论文，同时命中多个角色也只进入集合一次。
+    const unique = [...new Map((entries || []).map((item, index) => [item.id || index, item])).values()];
+    const counts = unique.filter((item) => !item.citationExcluded)
+      .map((item) => citationCount(item.citations)).sort((a, b) => b - a);
+    return {
+      papers: unique.length,
+      citations: counts.reduce((sum, count) => sum + count, 0),
+      hIndex: counts.reduce((h, count, index) => count >= index + 1 ? index + 1 : h, 0),
+      i10Index: counts.filter((count) => count >= 10).length,
+    };
   }
 
   function matchesFilter(item, filter, names) {
@@ -114,6 +179,7 @@
       return Number(result.journal && result.journal.zone) === Number(filter.slice(-1));
     }
     if (filter === 'first') return isFirstAuthor(item && item.authors, names);
+    if (filter === 'last') return isLastAuthor(item && item.authors, names);
     return true;
   }
 
@@ -128,6 +194,8 @@
       ccf: { A: 0, B: 0, C: 0 },
       zones: { 1: 0, 2: 0, 3: 0, 4: 0 },
       firstAuthor: 0,
+      lastAuthor: 0,
+      truncatedAuthors: 0,
       firstAuthorAvailable: authors.length > 0,
     };
 
@@ -143,6 +211,8 @@
       if (summary.firstAuthorAvailable && isFirstAuthor(item.authors, authors)) {
         summary.firstAuthor++;
       }
+      if (summary.firstAuthorAvailable && isLastAuthor(item.authors, authors)) summary.lastAuthor++;
+      if (/…|\.\.\.|\bet\s+al\b/i.test(item.authors || '')) summary.truncatedAuthors++;
     }
     return summary;
   }
@@ -154,6 +224,12 @@
     firstAuthorName,
     samePerson,
     isFirstAuthor,
+    isLastAuthor,
+    authorNameRanges,
+    citationCount,
+    matchesYear,
+    matchesHighlight,
+    metrics,
     matchesFilter,
     summarize,
   };

@@ -312,6 +312,32 @@
 
 .sr-row-filtered-out { display: none !important; }
 
+/* 高亮单元格而非 tr，兼容 Scholar 给单元格单独设置的背景。 */
+#gsc_a_b tr.sr-row-highlighted > td { background-color: #fffde0; }
+#gsc_a_b tr.sr-row-highlighted > td:first-child { box-shadow: inset 3px 0 #e8ce36; }
+.sr-author-name { padding: 0 1px; border-radius: 2px; background: #ffe792; color: #3c4043; font-weight: 600; }
+.sr-highlight-roles { display: grid; gap: 5px; }
+.sr-highlight-roles label, .sr-highlight-option { display: flex; align-items: center; gap: 5px; font-size: 12px; cursor: pointer; }
+.sr-highlight-roles label { border-radius: 5px; background: #f8f9fa; padding: 6px; }
+.sr-highlight-roles strong { margin-left: auto; color: #185abc; }
+.sr-highlight-option { margin-top: 7px; }
+.sr-stats-panel input[type="checkbox"] { appearance: auto; width: 14px; height: 14px; margin: 0; accent-color: #1a73e8; flex-shrink: 0; }
+.sr-stats-panel input:focus-visible, .sr-stats-panel select:focus-visible { outline: 2px solid #1a73e8; outline-offset: 2px; }
+.sr-year-range { display: flex; align-items: center; gap: 4px; margin: 10px 0; font-size: 11px; flex-wrap: wrap; }
+.sr-year-range select { min-width: 54px; max-width: 72px; height: 27px; padding: 2px; border: 1px solid #dadce0; border-radius: 4px; background: #fff; color: #3c4043; font: inherit; }
+.sr-stats-panel button.sr-year-reset { width: auto; min-width: 0; height: 27px; padding: 2px 4px; border: 0; background: transparent; color: #185abc; font: inherit; cursor: pointer; }
+.sr-metrics-caption { color: #80868b; font-weight: 400; }
+.sr-highlight-metrics { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sr-highlight-metrics th, .sr-highlight-metrics td { padding: 3px 0; border: 0; }
+.sr-highlight-metrics th { text-align: left; font-weight: 400; color: #5f6368; }
+.sr-highlight-metrics td { text-align: right; font-variant-numeric: tabular-nums; }
+.sr-highlight-metrics td span { color: #80868b; font-size: 11px; }
+.sr-export-actions { display: flex; gap: 6px; margin-top: 10px; }
+.sr-stats-panel .sr-export-actions button { flex: 1; min-width: 0; height: auto; padding: 7px 4px; border: 1px solid #c5d7f2; border-radius: 6px; background: #eef4fd; color: #185abc; font: 11px/1.4 Arial, "Microsoft YaHei", sans-serif; cursor: pointer; }
+.sr-stats-panel .sr-export-actions button:disabled { opacity: 0.5; cursor: wait; }
+.sr-export-status { color: #5f6368; font-size: 11px; margin-top: 5px; overflow-wrap: anywhere; }
+.sr-export-status:empty { display: none; }
+
 /* ---------- 这里故意没有 @media (prefers-color-scheme: dark) ----------
  *
  * Google Scholar 的页面永远是浅色的，跟系统主题无关。曾经按系统深色模式把徽章

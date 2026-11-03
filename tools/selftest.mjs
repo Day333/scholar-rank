@@ -327,6 +327,38 @@ checkStats(
 );
 checkStats(!completesTruncated('Pattern recognition', 'Information …'), '对不上的斜体（如书名）不采用');
 
+const stats = globalThis.SRStats;
+checkStats(!stats.samePerson('John Smith', 'Jane Smith') && stats.samePerson('JA Smith', 'John Adam Smith')
+  && stats.samePerson('J. A. Smith', 'John Adam Smith'), '完整姓名不会仅凭同姓同首字母误匹配，多字母缩写仍可识别');
+checkStats(stats.isLastAuthor('Y Hu, K Ding†', 'Kuiye Ding'), '完整列表末作兼容姓名缩写和作者标记');
+checkStats(!stats.isLastAuthor('Y Hu, K Ding, ...', 'Kuiye Ding')
+  && !stats.isLastAuthor('Y Hu, K Ding…', 'Kuiye Ding')
+  && !stats.isLastAuthor('Y Hu, K Ding et al.', 'Kuiye Ding'), '截断作者列表不会误把最后可见作者计为末作');
+checkStats(stats.isLastAuthor('张三、刘嘉威', 'Jiawei Liu (刘嘉威)')
+  && !stats.isLastAuthor('', 'Kuiye Ding'), '中文末作与空列表识别正确');
+const ranges = stats.authorNameRanges('A Author, K Ding*, B Author', 'Kuiye Ding');
+checkStats(ranges.length === 1 && 'A Author, K Ding*, B Author'.slice(ranges[0].start, ranges[0].end) === 'K Ding*',
+  '姓名高亮只覆盖匹配作者并保留原文位置');
+checkStats(stats.citationCount('1,234*') === 1234 && stats.citationCount('1\u202f234') === 1234
+  && stats.citationCount('') === 0, '引用数兼容千位分隔符、星号及未被引论文');
+const metrics = stats.metrics([100, 10, 8, 4, 0].map((citations) => ({ citations })));
+checkStats(metrics.papers === 5 && metrics.citations === 122 && metrics.hIndex === 4 && metrics.i10Index === 2,
+  '论文集合的引用总数、h-index 和 i10-index 按定义计算');
+const deduped = stats.metrics([{ id: 'one', citations: 10 }, { id: 'one', citations: 10 },
+  { id: 'duplicate', citations: 200, citationExcluded: true }]);
+checkStats(deduped.papers === 2 && deduped.citations === 10 && deduped.hIndex === 1 && deduped.i10Index === 1,
+  '重复条目按标识去重，划线引用不重复计入引用指标');
+checkStats(Object.values(stats.metrics([])).every((value) => value === 0), '未选中论文时四项指标为零');
+const solo = { authors: 'K Ding', year: 2024, citations: 10, result: { ccf: { rank: 'A' } } };
+const selected = [solo].filter((item) => stats.matchesHighlight(item,
+  { first: true, last: true, startYear: 2024, endYear: 2024, category: 'ccf-a' }, 'Kuiye Ding'));
+checkStats(selected.length === 1 && stats.metrics(selected).papers === 1, '单作者论文同时命中一作和末作只计一次，年份包含边界');
+checkStats(!stats.matchesHighlight(solo, { last: true, startYear: 2025 }, 'Kuiye Ding')
+  && !stats.matchesHighlight(solo, { first: true, category: 'ccf-b' }, 'Kuiye Ding')
+  && !stats.matchesHighlight(solo, { first: false, last: false }, 'Kuiye Ding'), '年份、分类及未选角色均正确限制高亮集合');
+checkStats(!stats.matchesYear({ year: null }, { startYear: 2020 })
+  && stats.matchesYear({ year: null }, {}), '缺失年份仅在不限制年份时参与统计');
+
 if (rank.missingAliases.length) {
   failed++;
   console.error('FAIL  aliases.json 里存在指向不存在 CCF 简称的别名：');

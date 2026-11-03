@@ -46,7 +46,7 @@
       <div id="gsc_g" aria-label="引用次数图表"></div>
     </section>
   </aside>
-  <h1>离线预览：Google Scholar 个人主页结构</h1>
+  <h1 data-html2canvas-ignore="true">离线预览：Google Scholar 个人主页结构</h1>
   <p class="note">
     这个页面复刻了 Scholar 个人主页的 DOM 结构，并用一套假的 <code>chrome.*</code> API 直接跑真实的 content script，
     用来在不打开 Scholar 的情况下检查徽章渲染效果。需通过 <code>node tools/serve.mjs</code> 起的本地服务打开。
@@ -151,7 +151,7 @@
     </tbody>
   </table>
 
-  <h1 style="margin-top:36px">搜索结果结构</h1>
+  <h1 style="margin-top:36px" data-html2canvas-ignore="true">搜索结果结构</h1>
   <p class="note">
     复刻 <code>scholar.google.com/scholar?q=…</code> 的结构：<code>.gs_a</code> 用不换行空格包住的短横线
     分成「作者 - 出处, 年份 - 站点」，但站点段可能缺失、刊名本身也可能带短横线。
@@ -228,6 +228,8 @@
   <script src="../src/lib/normalize.js"></script>
   <script src="../src/lib/ranking.js"></script>
   <script src="../src/lib/stats.js"></script>
+  <script src="../src/vendor/html2canvas.min.js"></script>
+  <script src="../src/content/screenshot.js"></script>
   <script src="../src/content/scholar.js"></script>
 </body>
 </html>

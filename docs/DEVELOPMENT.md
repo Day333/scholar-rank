@@ -18,7 +18,9 @@ src/
   data/aliases.json           Scholar 写法 → CCF/CORE 简称的人工别名表
   data/tags.json              自定义标记（默认含「ML三大顶会」「数据库四大」）
   content/scholar.js          页面注入
+  content/screenshot.js       本机 PNG 截图、下载与剪贴板复制
   content/badges.css          徽章样式
+  vendor/                    离线截图库及 MIT 许可
   options/                    设置页
   popup/                      工具栏弹窗
 tools/
@@ -110,7 +112,10 @@ CCF 与 CORE 共用同一套索引和匹配逻辑，别名表也共用 —— `n
 ## 测试
 
 ```bash
-npm test                  # 109 项断言，含学位论文/二级轨道/截断歧义/标记误报和统计筛选用例
+npm test                  # 匹配、角色、年份、去重和引用指标断言
+npm ci                    # 维护者运行浏览器测试前安装开发依赖
+npm run test:browser      # 自动启动预览服务器，隔离 Chrome / Edge 验证交互和 PNG
+npm run vendor:screenshot # 从锁定的依赖重新复制 html2canvas 及其许可
 npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 ```
 
@@ -119,6 +124,11 @@ npm run probe -- "IEEE Internet of Things Journal 11 (3), 4000-4012"
 `NEGATIVE`（完全不该出徽章）。别名表里指向不存在简称的条目也会直接判失败。
 
 **改匹配逻辑或补别名后请跑一遍**，并把新场景补进对应的列表。
+
+浏览器测试优先使用 `CHROME_PATH` 指定的可执行文件，否则寻找系统 Chrome / Edge。
+不会使用个人浏览器配置；仅在测试上下文授予剪贴板权限，用于验证实际 PNG 图片。
+测试覆盖作者链接保留、跨文本节点的姓名高亮、截断末作、角色并集、年份和分类交集、动态加载、刷新保留选项及开关清理。
+生成的预览图和实际导出 PNG 位于 `tools/.cache/browser/`。`SR_TEST_PORT` 可更改默认测试端口 8129。
 
 ## 本地预览
 
