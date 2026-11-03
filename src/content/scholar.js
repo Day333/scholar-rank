@@ -145,59 +145,59 @@
     if (!panel) {
       panel = document.createElement('aside');
       panel.className = STATS_PANEL_CLASS;
-      panel.setAttribute('aria-label', '论文统计');
+      panel.setAttribute('aria-label', 'Paper statistics');
       panel.innerHTML = `
         <div class="sr-stats-header">
-          <span>论文统计</span>
-          <span class="sr-stats-toggle" role="button" tabindex="0" aria-label="收起论文统计" aria-expanded="true">−</span>
+          <span>Paper statistics</span>
+          <span class="sr-stats-toggle" role="button" tabindex="0" aria-label="Collapse paper statistics" aria-expanded="true">−</span>
         </div>
         <div class="sr-stats-body">
           <div class="sr-stats-total">
-            当前已加载 <strong data-stat="total">0</strong> 篇
-            <span data-stat-wrap="visible" hidden> · 显示 <strong data-stat="visible">0</strong> 篇</span>
+            <strong data-stat="total">0</strong> papers loaded
+            <span data-stat-wrap="visible" hidden> · Showing <strong data-stat="visible">0</strong></span>
           </div>
-          <div class="sr-stats-title">作者高亮</div>
+          <div class="sr-stats-title">Author highlighter</div>
           <div class="sr-highlight-roles">
-            <label><input type="checkbox" data-highlight="first">一作（含共一）<strong data-stat="first">0</strong></label>
-            <label><input type="checkbox" data-highlight="last">末作<strong data-stat="last">0</strong></label>
+            <label><input type="checkbox" data-highlight="first">First (incl. co-first)<strong data-stat="first">0</strong></label>
+            <label><input type="checkbox" data-highlight="last">Last<strong data-stat="last">0</strong></label>
           </div>
-          <label class="sr-highlight-option"><input type="checkbox" data-highlight="only">仅显示高亮论文</label>
-          <label class="sr-highlight-option"><input type="checkbox" data-highlight="names">高亮作者姓名</label>
+          <label class="sr-highlight-option"><input type="checkbox" data-highlight="only">Show only highlighted papers</label>
+          <label class="sr-highlight-option"><input type="checkbox" data-highlight="names">Highlight author name</label>
           <div class="sr-year-range">
-            <span>年份</span>
-            <select data-highlight="startYear" aria-label="开始年份"><option value="">不限</option></select>
-            <span>至</span>
-            <select data-highlight="endYear" aria-label="结束年份"><option value="">不限</option></select>
-            <button type="button" class="sr-year-reset" aria-label="清除年份范围">重置</button>
+            <span>Year</span>
+            <select data-highlight="startYear" aria-label="Start year"><option value="">Any</option></select>
+            <span>to</span>
+            <select data-highlight="endYear" aria-label="End year"><option value="">Any</option></select>
+            <button type="button" class="sr-year-reset" aria-label="Clear year range">Reset</button>
           </div>
-          <div class="sr-stats-title">高亮论文指标 <span class="sr-metrics-caption">/ 已加载论文</span></div>
-          <table class="sr-highlight-metrics" aria-label="高亮论文指标">
+          <div class="sr-stats-title">Highlighted paper metrics <span class="sr-metrics-caption">/ all loaded</span></div>
+          <table class="sr-highlight-metrics" aria-label="Highlighted paper metrics">
             <tbody>
-              <tr><th scope="row">论文数</th><td><strong data-stat="highlight-papers">0</strong><span data-stat="all-papers"> / 0</span></td></tr>
-              <tr><th scope="row">引用数</th><td><strong data-stat="highlight-citations">0</strong><span data-stat="all-citations"> / 0</span></td></tr>
+              <tr><th scope="row">Papers</th><td><strong data-stat="highlight-papers">0</strong><span data-stat="all-papers"> / 0</span></td></tr>
+              <tr><th scope="row">Citations</th><td><strong data-stat="highlight-citations">0</strong><span data-stat="all-citations"> / 0</span></td></tr>
               <tr><th scope="row">h-index</th><td><strong data-stat="highlight-hIndex">0</strong><span data-stat="all-hIndex"> / 0</span></td></tr>
               <tr><th scope="row">i10-index</th><td><strong data-stat="highlight-i10Index">0</strong><span data-stat="all-i10Index"> / 0</span></td></tr>
             </tbody>
           </table>
-          <div class="sr-stats-title">CCF 分类</div>
+          <div class="sr-stats-title">CCF rankings</div>
           <div class="sr-stats-grid sr-stats-grid-ccf">
-            <span class="sr-stat sr-stat-a" data-filter="ccf-a" role="button" tabindex="0" aria-pressed="false"><span>A 类</span><strong data-stat="ccf-a">0</strong></span>
-            <span class="sr-stat sr-stat-b" data-filter="ccf-b" role="button" tabindex="0" aria-pressed="false"><span>B 类</span><strong data-stat="ccf-b">0</strong></span>
-            <span class="sr-stat sr-stat-c" data-filter="ccf-c" role="button" tabindex="0" aria-pressed="false"><span>C 类</span><strong data-stat="ccf-c">0</strong></span>
+            <span class="sr-stat sr-stat-a" data-filter="ccf-a" role="button" tabindex="0" aria-pressed="false"><span>A</span><strong data-stat="ccf-a">0</strong></span>
+            <span class="sr-stat sr-stat-b" data-filter="ccf-b" role="button" tabindex="0" aria-pressed="false"><span>B</span><strong data-stat="ccf-b">0</strong></span>
+            <span class="sr-stat sr-stat-c" data-filter="ccf-c" role="button" tabindex="0" aria-pressed="false"><span>C</span><strong data-stat="ccf-c">0</strong></span>
           </div>
-          <div class="sr-stats-title">中科院分区</div>
+          <div class="sr-stats-title">CAS journal divisions</div>
           <div class="sr-stats-grid sr-stats-grid-zone">
-            <span class="sr-stat sr-stat-z1" data-filter="zone-1" role="button" tabindex="0" aria-pressed="false"><span>1 区</span><strong data-stat="zone-1">0</strong></span>
-            <span class="sr-stat sr-stat-z2" data-filter="zone-2" role="button" tabindex="0" aria-pressed="false"><span>2 区</span><strong data-stat="zone-2">0</strong></span>
-            <span class="sr-stat sr-stat-z3" data-filter="zone-3" role="button" tabindex="0" aria-pressed="false"><span>3 区</span><strong data-stat="zone-3">0</strong></span>
-            <span class="sr-stat sr-stat-z4" data-filter="zone-4" role="button" tabindex="0" aria-pressed="false"><span>4 区</span><strong data-stat="zone-4">0</strong></span>
+            <span class="sr-stat sr-stat-z1" data-filter="zone-1" role="button" tabindex="0" aria-pressed="false"><span>Zone 1</span><strong data-stat="zone-1">0</strong></span>
+            <span class="sr-stat sr-stat-z2" data-filter="zone-2" role="button" tabindex="0" aria-pressed="false"><span>Zone 2</span><strong data-stat="zone-2">0</strong></span>
+            <span class="sr-stat sr-stat-z3" data-filter="zone-3" role="button" tabindex="0" aria-pressed="false"><span>Zone 3</span><strong data-stat="zone-3">0</strong></span>
+            <span class="sr-stat sr-stat-z4" data-filter="zone-4" role="button" tabindex="0" aria-pressed="false"><span>Zone 4</span><strong data-stat="zone-4">0</strong></span>
           </div>
-          <button type="button" class="sr-load-all">加载全部论文</button>
+          <button type="button" class="sr-load-all">Load all papers</button>
           <div class="sr-load-status" data-stat="load-status" role="status"></div>
-          <div class="sr-stats-note" data-stat="note">点击分类可筛选 · 支持 * 标注的共同一作</div>
+          <div class="sr-stats-note" data-stat="note">Click a rank to filter · Co-first authors with * markers are included</div>
           <div class="sr-export-actions" data-html2canvas-ignore="true">
-            <button type="button" data-export="copy">复制截图</button>
-            <button type="button" data-export="download">下载截图</button>
+            <button type="button" data-export="copy">Copy screenshot</button>
+            <button type="button" data-export="download">Download screenshot</button>
           </div>
           <div class="sr-export-status" role="status" data-html2canvas-ignore="true"></div>
         </div>`;
@@ -205,7 +205,7 @@
         const collapsed = panel.classList.toggle('sr-stats-collapsed');
         event.currentTarget.textContent = collapsed ? '+' : '−';
         event.currentTarget.setAttribute('aria-expanded', String(!collapsed));
-        event.currentTarget.setAttribute('aria-label', collapsed ? '展开论文统计' : '收起论文统计');
+        event.currentTarget.setAttribute('aria-label', collapsed ? 'Expand paper statistics' : 'Collapse paper statistics');
       };
       const toggle = panel.querySelector('.sr-stats-toggle');
       toggle.addEventListener('click', toggleStats);
@@ -231,7 +231,7 @@
       panel.querySelector('.sr-load-all').addEventListener('click', () => {
         if (loadAllRunning) {
           loadAllCancelled = true;
-          loadAllState = '正在停止…';
+          loadAllState = 'Stopping…';
           updateLoadAllControl(panel);
         } else {
           void loadAllPapers();
@@ -315,7 +315,7 @@
       const values = [...new Set([...years, Number(highlightOptions[key])].filter(Boolean))].sort((a, b) => a - b);
       const optionKey = signature + ':' + highlightOptions[key];
       if (control.dataset.years !== optionKey) {
-        control.replaceChildren(new Option('不限', ''), ...values.map((year) => new Option(String(year), String(year))));
+        control.replaceChildren(new Option('Any', ''), ...values.map((year) => new Option(String(year), String(year))));
         control.dataset.years = optionKey;
       }
       control.value = highlightOptions[key];
@@ -385,11 +385,11 @@
     const button = panel && panel.querySelector('.sr-load-all');
     if (!button) return;
 
-    let label = '加载全部论文';
+    let label = 'Load all papers';
     let disabled = false;
-    if (loadAllRunning) label = loadAllCancelled ? '正在停止…' : `停止自动加载（${profileEntries().length} 篇）`;
-    else if (!canLoadMore()) { label = '已加载全部'; disabled = true; }
-    else if (loadAllState) label = '继续加载全部';
+    if (loadAllRunning) label = loadAllCancelled ? 'Stopping…' : `Stop loading (${profileEntries().length} papers)`;
+    else if (!canLoadMore()) { label = 'All papers loaded'; disabled = true; }
+    else if (loadAllState) label = 'Resume loading';
 
     if (button.textContent !== label) button.textContent = label;
     button.disabled = disabled;
@@ -417,7 +417,7 @@
     if (loadAllRunning || !canLoadMore()) return;
     loadAllRunning = true;
     loadAllCancelled = false;
-    loadAllState = '正在自动加载，点击按钮可停止';
+    loadAllState = 'Loading papers. Click to stop.';
     renderProfileStats();
 
     let pages = 0;
@@ -430,18 +430,18 @@
         const after = await waitForRowGrowth(before);
         if (loadAllCancelled) break;
         if (after <= before) {
-          loadAllState = '加载超时，请检查网络后重试';
+          loadAllState = 'Loading timed out. Check your connection and retry.';
           break;
         }
         annotateAll();
         await shortDelay(500);
       }
 
-      if (loadAllCancelled) loadAllState = '已停止自动加载';
-      else if (pages >= 200) loadAllState = '已达到单次加载上限（200 页）';
-      else if (!canLoadMore()) loadAllState = '全部论文已加载';
+      if (loadAllCancelled) loadAllState = 'Loading stopped';
+      else if (pages >= 200) loadAllState = 'Reached the limit of 200 pages per run.';
+      else if (!canLoadMore()) loadAllState = 'All papers loaded';
     } catch (err) {
-      loadAllState = '加载失败，请稍后重试';
+      loadAllState = 'Loading failed. Please try again.';
       console.error('[学术分级标注] 自动加载失败:', err);
     } finally {
       loadAllRunning = false;
@@ -502,9 +502,9 @@
       button.tabIndex = disabled ? -1 : 0;
     }
     setStat(panel, 'note', summary.firstAuthorAvailable
-      ? '点击分类可筛选 · 指标基于已加载论文'
-        + (summary.truncatedAuthors ? ` · ${summary.truncatedAuthors} 篇作者列表截断，未判定末作` : '')
-      : '未识别主页姓名，可在设置中添加作者别名');
+      ? 'Click a rank to filter · Metrics use loaded papers'
+        + (summary.truncatedAuthors ? ` · ${summary.truncatedAuthors} truncated author lists; last author unknown` : '')
+      : 'Profile name unavailable. Add author aliases in Settings.');
     updateLoadAllControl(panel);
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "scholar-rank",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Chrome 扩展：在 Google Scholar 显示 CCF、中科院、ABDC、ABS/AJG、UTD24、FT50、Nature Index 等评级",
   "type": "module",

@@ -15,7 +15,7 @@
     // 控制浏览器画布的尺寸和内存；长列表仍导出全部内容，不静默裁切。
     const scale = Math.min(window.devicePixelRatio || 1, 2, 16000 / width, 16000 / height,
       Math.sqrt(32000000 / (width * height)));
-    if (scale < 0.5) throw new Error('论文列表较长，请缩小年份范围或仅显示高亮论文后再截图');
+    if (scale < 0.5) throw new Error('Too many papers for one screenshot. Narrow the year range or show only highlighted papers.');
     const canvas = await root.html2canvas(target, {
       backgroundColor: '#ffffff', scale, width, height,
       useCORS: true, allowTaint: false, logging: false, imageTimeout: 5000,
@@ -27,7 +27,7 @@
         // 释放大画布，但保留已编码的 PNG。
         canvas.width = canvas.height = 0;
         if (blob) resolve(blob);
-        else reject(new Error('截图生成失败，请缩小筛选范围后重试'));
+        else reject(new Error('Could not generate the screenshot. Narrow the filters and try again.'));
       }, 'image/png');
     });
   }
@@ -38,15 +38,15 @@
     const buttons = [...panel.querySelectorAll('[data-export]')];
     busy = true;
     buttons.forEach((button) => { button.disabled = true; });
-    status.textContent = '正在生成截图…';
+    status.textContent = 'Generating screenshot…';
     try {
       if (mode === 'copy') {
         if (!navigator.clipboard?.write || !root.ClipboardItem) {
-          throw new Error('当前浏览器不支持复制图片，请使用下载截图');
+          throw new Error('Image copying is unavailable in this browser. Use Download screenshot.');
         }
         // 在用户点击时立即请求写入，PNG 异步生成，避免丢失用户手势。
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': screenshotBlob() })]);
-        status.textContent = '截图已复制，可直接粘贴';
+        status.textContent = 'Screenshot copied. Ready to paste.';
       } else {
         const blob = await screenshotBlob();
         const url = URL.createObjectURL(blob);
@@ -59,11 +59,11 @@
         link.download = `Scholar-Rank-${name}-${date}.png`;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 60000);
-        status.textContent = '截图已下载';
+        status.textContent = 'Screenshot downloaded.';
       }
     } catch (error) {
       status.textContent = error.name === 'NotAllowedError'
-        ? '复制未获浏览器授权，请点击重试或使用下载截图' : (error.message || '截图失败，请重试');
+        ? 'Clipboard access was denied. Retry or download the screenshot.' : (error.message || 'Screenshot failed. Please try again.');
     } finally {
       busy = false;
       buttons.forEach((button) => { button.disabled = false; });

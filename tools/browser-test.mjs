@@ -136,22 +136,23 @@ try {
   await page.locator('[data-export="download"]').click();
   const download = await downloadPromise;
   await download.saveAs(output + '/profile.png');
-  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent === '截图已下载');
+  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent === 'Screenshot downloaded.');
   const png = await readFile(output + '/profile.png');
   assert.equal(png.subarray(1, 4).toString(), 'PNG');
   assert.ok(png.readUInt32BE(16) >= 1400 && png.readUInt32BE(20) >= 650, '截图包含完整论文列表及侧栏');
   await page.locator('[data-export="copy"]').click();
-  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent.includes('截图已复制'));
+  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent.includes('Screenshot copied.'));
   const types = await page.evaluate(async () => (await navigator.clipboard.read()).flatMap((item) => item.types));
   assert.ok(types.includes('image/png'), '剪贴板中存在真实 PNG 图片');
   await page.screenshot({ path: output + '/preview.png', fullPage: true });
+  await page.locator('.sr-stats-panel').screenshot({ path: output + '/sidebar.png' });
 
   // 复制被拒时给出可恢复提示，仍可下载；划线引用不污染指标。
   await page.evaluate(() => {
     navigator.clipboard.write = async () => { throw new DOMException('Denied', 'NotAllowedError'); };
   });
   await page.locator('[data-export="copy"]').click();
-  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent.includes('未获浏览器授权'));
+  await page.waitForFunction(() => document.querySelector('.sr-export-status').textContent.includes('Clipboard access was denied.'));
   assert.equal(await page.locator('[data-export="download"]').isEnabled(), true);
   await page.evaluate(() => {
     document.querySelector('[data-test-id="loaded"] .gsc_a_ac').innerHTML = '<s>10</s>';
