@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "学术分级标注 · Scholar Rank",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "在 Google Scholar 上显示 CCF、中科院、ABDC、ABS/AJG、UTD24、FT50、Nature Index 等期刊会议评级。",
   "icons": {
     "16": "icons/icon16.png",

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Scholar Rank: an open book with a gold bookmark">
+  <defs>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="rgb(25,56,75)"/>
+      <stop offset="1" stop-color="rgb(14,33,50)"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="122" height="122" rx="29" fill="url(#ink)"/>
+  <path d="M 28 40 C 40 36 51 38 61 44 L 61 91 C 50 85 39 83 28 86 Z" fill="rgb(246,248,244)"/>
+  <path d="M 67 44 C 77 38 88 36 100 40 L 100 86 C 88 83 78 85 67 91 Z" fill="rgb(224,237,234)"/>
+  <path d="M 82 32 L 94 32 L 94 65 L 88 60 L 82 65 Z" fill="rgb(235,185,104)"/>
+</svg>

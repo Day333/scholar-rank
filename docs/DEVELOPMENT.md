@@ -6,7 +6,7 @@
 
 ```
 manifest.json                 MV3 清单
-icons/                        由 tools/make-icons.mjs 生成
+icons/                        由 tools/make-icons.mjs 生成的 SVG 与各尺寸 PNG
 src/
   lib/normalize.js            刊名归一化与候选名生成（浏览器 / Node 共用）
   lib/ranking.js              查表与徽章生成（浏览器 / Node 共用）
@@ -27,7 +27,7 @@ tools/
   build-ccf.mjs               抓取并解析 ccf.atom.im
   build-core.mjs              抓取 CORE 门户的 Export 接口
   build-journals.mjs          抓取并合并分区表 / JCR / 预警 / EI
-  make-icons.mjs              手写 PNG 生成图标
+  make-icons.mjs              共用书页、书签矢量几何生成 SVG 和抗锯齿 PNG
   selftest.mjs                匹配回归测试
   lookup.mjs                  命令行单条查询
   serve.mjs                   本地预览服务器

@@ -1,4 +1,4 @@
-// 生成扩展图标（无第三方依赖，直接手写 PNG）。
+// Scholar Rank 图标：书页与书签。共用矢量几何生成 SVG 与抗锯齿 PNG，无第三方依赖。
 // 用法: node tools/make-icons.mjs
 import { deflateSync } from 'node:zlib';
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -6,9 +6,56 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const OUT_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'icons');
-const SS = 4;                       // 超采样倍数，用于抗锯齿
-const BG = [26, 115, 232];          // #1a73e8
-const BAR = [255, 255, 255];
+const SS = 8;
+const INK_TOP = [25, 56, 75];
+const INK_BOTTOM = [14, 33, 50];
+const PAPER = [246, 248, 244];
+const PAPER_RIGHT = [224, 237, 234];
+const GOLD = [235, 185, 104];
+const LEFT_PAGE = [
+  ['M', 28, 40], ['C', 40, 36, 51, 38, 61, 44], ['L', 61, 91],
+  ['C', 50, 85, 39, 83, 28, 86], ['Z'],
+];
+const RIGHT_PAGE = [
+  ['M', 67, 44], ['C', 77, 38, 88, 36, 100, 40], ['L', 100, 86],
+  ['C', 88, 83, 78, 85, 67, 91], ['Z'],
+];
+const BOOKMARK = [['M', 82, 32], ['L', 94, 32], ['L', 94, 65], ['L', 88, 60], ['L', 82, 65], ['Z']];
+
+function flatten(commands) {
+  const points = [];
+  let current = [0, 0];
+  for (const [command, ...args] of commands) {
+    if (command === 'M' || command === 'L') { current = args; points.push(current); }
+    if (command === 'C') {
+      const [x0, y0] = current;
+      const [x1, y1, x2, y2, x3, y3] = args;
+      for (let step = 1; step <= 32; step++) {
+        const t = step / 32;
+        const s = 1 - t;
+        points.push([
+          s ** 3 * x0 + 3 * s ** 2 * t * x1 + 3 * s * t ** 2 * x2 + t ** 3 * x3,
+          s ** 3 * y0 + 3 * s ** 2 * t * y1 + 3 * s * t ** 2 * y2 + t ** 3 * y3,
+        ]);
+      }
+      current = [x3, y3];
+    }
+  }
+  return points;
+}
+
+const SHAPES = [[LEFT_PAGE, PAPER], [RIGHT_PAGE, PAPER_RIGHT], [BOOKMARK, GOLD]]
+  .map(([commands, color]) => ({ points: flatten(commands), commands, color }));
+
+function insidePolygon(x, y, points) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const [xi, yi] = points[i];
+    const [xj, yj] = points[j];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
 
 const CRC_TABLE = (() => {
   const t = new Int32Array(256);
@@ -54,26 +101,15 @@ function encodePNG(size, rgba) {
   ]);
 }
 
-/** 圆角矩形底 + 三根递增的柱子，象征分级。 */
-function sample(x, y, n) {
-  const r = n * 0.22;                       // 圆角半径
-  const inCorner = (cx, cy) => (x - cx) ** 2 + (y - cy) ** 2 > r * r;
-  if (x < r && y < r && inCorner(r, r)) return null;
-  if (x > n - r && y < r && inCorner(n - r, r)) return null;
-  if (x < r && y > n - r && inCorner(r, n - r)) return null;
-  if (x > n - r && y > n - r && inCorner(n - r, n - r)) return null;
-
-  const barW = n * 0.14;
-  const gap = n * 0.09;
-  const left = n * 0.235;
-  const bottom = n * 0.78;
-  const heights = [0.26, 0.40, 0.54];
-  for (let i = 0; i < 3; i++) {
-    const x0 = left + i * (barW + gap);
-    const y0 = bottom - heights[i] * n;
-    if (x >= x0 && x <= x0 + barW && y >= y0 && y <= bottom) return BAR;
+function sample(x, y) {
+  const dx = Math.max(32 - x, 0, x - 96);
+  const dy = Math.max(32 - y, 0, y - 96);
+  if (dx * dx + dy * dy > 29 * 29) return null;
+  for (let i = SHAPES.length - 1; i >= 0; i--) {
+    if (insidePolygon(x, y, SHAPES[i].points)) return SHAPES[i].color;
   }
-  return BG;
+  const t = Math.max(0, Math.min(1, (y - 3) / 122));
+  return INK_TOP.map((value, index) => value + (INK_BOTTOM[index] - value) * t);
 }
 
 function render(size) {
@@ -81,7 +117,7 @@ function render(size) {
   const acc = new Float64Array(size * size * 4);
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
-      const c = sample(x + 0.5, y + 0.5, n);
+      const c = sample((x + 0.5) * 128 / n, (y + 0.5) * 128 / n);
       const idx = ((y / SS) | 0) * size * 4 + (((x / SS) | 0) * 4);
       if (c) {
         acc[idx] += c[0]; acc[idx + 1] += c[1]; acc[idx + 2] += c[2]; acc[idx + 3] += 255;
@@ -103,6 +139,18 @@ function render(size) {
 }
 
 mkdirSync(OUT_DIR, { recursive: true });
+const rgb = (color) => `rgb(${color.join(',')})`;
+const paths = SHAPES.map(({ commands, color }) => `  <path d="${commands.map((command) => command.join(' ')).join(' ')}" fill="${rgb(color)}"/>`).join('\n');
+writeFileSync(join(OUT_DIR, 'icon.svg'), `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Scholar Rank: an open book with a gold bookmark">
+  <defs>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="${rgb(INK_TOP)}"/>
+      <stop offset="1" stop-color="${rgb(INK_BOTTOM)}"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="122" height="122" rx="29" fill="url(#ink)"/>
+${paths}
+</svg>\n`);
 for (const size of [16, 32, 48, 128]) {
   const file = join(OUT_DIR, `icon${size}.png`);
   writeFileSync(file, encodePNG(size, render(size)));
