@@ -177,8 +177,72 @@ try {
   assert.equal(await page.locator('.sr-author-name, .sr-row-highlighted, .sr-row-filtered-out').count(), 0, '关闭扩展清除全部高亮和筛选');
   await page.evaluate(() => chrome.storage.sync.set({ enabled: true }));
   await page.waitForSelector('.sr-highlight-metrics');
+
+  // Issue #3 的真实姓名和作者行，加上末作及同姓误匹配对照。
+  await checkbox('only').uncheck();
+  await checkbox('last').uncheck();
+  await page.locator('.sr-year-reset').click();
+  const nameProfiles = [
+    {
+      name: 'Brett Beaulieu-Jones', first: 3, last: 1,
+      rows: [
+        ['BK Beaulieu-Jones, JH Moore, THEPROA ALS, CT CONSORTIUM', 'BK Beaulieu-Jones'],
+        ['BK Beaulieu‐Jones, SG Finlayson, W Yuan, RB Altman, IS Kohane, ...', 'BK Beaulieu‐Jones'],
+        ['B Beaulieu-Jones, SG Finlayson, C Chivers, I Chen, M McDermott, ...', 'B Beaulieu-Jones'],
+        ['WS Liang, B Beaulieu-Jones, S Smalley, M Snyder, LH Goetz, NJ Schork', 'B Beaulieu-Jones'],
+        ['Other Author, BK Beaulieu-Jones', 'BK Beaulieu-Jones'],
+        ['BK Jones, BK Other-Jones, CK Beaulieu-Jones', ''],
+        ['Other Author, BK Beaulieu-Jones, ...', 'BK Beaulieu-Jones'],
+      ],
+    },
+    {
+      name: 'Madeleine Torcasso (Durkee)', first: 2, last: 1,
+      rows: [
+        ['MS Torcasso, J Ai, T Cao, MR Clark, ML Giger', 'MS Torcasso'],
+        ['MS Durkee, Other Author', 'MS Durkee'],
+        ['D Liu, MS Torcasso, D Alonso-Caneiro, GR Untracht, JJ Drinkwater, Q Li, ...', 'MS Torcasso'],
+        ['NE Wright, DE Kennedy, J Ai, ML Veselits, M Attaway, Y Yoon, MS Durkee, ...', 'MS Durkee'],
+        ['Other Author, MS Durkee', 'MS Durkee'],
+        ['JS Durkee, Other Author', ''],
+        ['Durkee, Other Author', ''],
+      ],
+    },
+  ];
+  for (const profile of nameProfiles) {
+    await page.evaluate(({ name, rows }) => {
+      document.querySelector('#gsc_prf_in').textContent = name;
+      const body = document.querySelector('#gsc_a_b tbody');
+      body.replaceChildren();
+      rows.forEach(([authors], index) => {
+        const row = document.createElement('tr');
+        row.className = 'gsc_a_tr';
+        row.dataset.testId = `name-${index}`;
+        row.innerHTML = `<td class="gsc_a_t"><a class="gsc_a_at" href="/citations?citation_for_view=test:name-${index}">Name regression ${index}</a><div class="gs_gray"></div><div class="gs_gray">Unknown Venue</div></td><td class="gsc_a_c">10</td><td class="gsc_a_y">2024</td>`;
+        row.querySelector('.gs_gray').textContent = authors;
+        body.append(row);
+      });
+    }, profile);
+    await checkStat('total', profile.rows.length);
+    await checkStat('first', profile.first);
+    await checkStat('last', profile.last);
+    await checkStat('highlight-papers', profile.first);
+    for (const [index, [authors, expectedName]] of profile.rows.entries()) {
+      const author = page.locator(`[data-test-id="name-${index}"] .gs_gray`).first();
+      assert.equal(await author.textContent(), authors, '高亮保留作者行原文');
+      assert.deepEqual(await author.locator('mark.sr-author-name').allTextContents(), expectedName ? [expectedName] : [],
+        `${profile.name} 正确高亮 ${authors}`);
+    }
+    await checkbox('last').check();
+    await checkbox('first').uncheck();
+    await checkStat('highlight-papers', profile.last);
+    await checkbox('only').check();
+    assert.equal(await page.locator('tr.gsc_a_tr:visible').count(), profile.last, '末作筛选仍排除截断作者列表');
+    await checkbox('only').uncheck();
+    await checkbox('first').check();
+    await checkbox('last').uncheck();
+  }
   assert.deepEqual(errors, [], '页面没有运行时异常');
-  console.log('浏览器验证通过：末作、高亮、组合筛选、指标、动态加载、持久化、PNG 下载和剪贴板复制。');
+  console.log('浏览器验证通过：外国姓名、一作/末作、高亮、组合筛选、指标、动态加载、持久化、PNG 下载和剪贴板复制。');
   console.log(`预览与实际导出图片：${output}`);
 } finally {
   await browser?.close();

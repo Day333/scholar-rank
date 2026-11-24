@@ -328,6 +328,50 @@ checkStats(
 checkStats(!completesTruncated('Pattern recognition', 'Information …'), '对不上的斜体（如书名）不采用');
 
 const stats = globalThis.SRStats;
+// Issue #3：复姓、主页省略中间名、括号旧姓应同时用于角色统计和姓名高亮。
+const NAME_MATCHES = [
+  ['BK Beaulieu-Jones', 'Brett Beaulieu-Jones'],
+  ['B Beaulieu-Jones', 'Brett Beaulieu-Jones'],
+  ['BK Beaulieu‐Jones', 'Brett Beaulieu-Jones'],
+  ['B. K. Beaulieu‑Jones', 'Brett Beaulieu-Jones'],
+  ['Beaulieu-Jones, Brett', 'BK Beaulieu-Jones'],
+  ['MS Torcasso', 'Madeleine Torcasso'],
+  ['M. S. Torcasso', 'Madeleine Torcasso'],
+  ['SY Chen', 'Szu-Yu Chen'],
+  ['JA Smith', 'John Smith'],
+  ['J Smith', 'John Adam Smith'],
+];
+for (const [author, profile] of NAME_MATCHES) {
+  checkStats(stats.samePerson(author, profile) && stats.samePerson(profile, author), `${profile} 双向匹配 ${author}`);
+}
+const NAME_MISMATCHES = [
+  ['BK Jones', 'Brett Beaulieu-Jones'],
+  ['BK Other-Jones', 'Brett Beaulieu-Jones'],
+  ['CK Beaulieu-Jones', 'Brett Beaulieu-Jones'],
+  ['BJ Beaulieu-Jones', 'Brett K Beaulieu-Jones'],
+  ['Jane Smith', 'John Smith'],
+  ['JB Smith', 'John Adam Smith'],
+  ['SB Chen', 'Szu-Yu Chen'],
+];
+for (const [author, profile] of NAME_MISMATCHES) {
+  checkStats(!stats.samePerson(author, profile) && !stats.samePerson(profile, author), `${profile} 不误匹配 ${author}`);
+}
+const formerSurnameProfile = 'Madeleine Torcasso (Durkee)';
+checkStats(stats.profileNames(formerSurnameProfile).includes('Madeleine Durkee'), '单词括号旧姓与主页名字组合成完整别名');
+checkStats(!stats.profileNames('John Smith (PhD)').includes('John PhD')
+  && !stats.profileNames('John Smith (Professor)').includes('John Professor'), '括号学位和职称不组合成姓氏别名');
+for (const profile of [formerSurnameProfile, 'Madeleine Torcasso（Durkee）']) {
+  for (const author of ['MS Torcasso', 'M Torcasso', 'MS Durkee', 'M Durkee']) {
+    const line = `${author}, Other Author`;
+    const ranges = stats.authorNameRanges(line, profile);
+    checkStats(stats.isFirstAuthor(line, profile) && stats.isLastAuthor(`Other Author, ${author}`, profile)
+      && ranges.length === 1 && line.slice(ranges[0].start, ranges[0].end) === author,
+    `${profile} 的新旧姓 ${author} 同时用于一作、末作和姓名高亮`);
+  }
+}
+checkStats(!stats.isFirstAuthor('JS Durkee, Other Author', formerSurnameProfile)
+  && !stats.isFirstAuthor('Madeleine Smith, Other Author', formerSurnameProfile)
+  && !stats.isFirstAuthor('Durkee, Other Author', formerSurnameProfile), '旧姓别名仍须匹配名字，不能只凭姓氏命中');
 checkStats(!stats.samePerson('John Smith', 'Jane Smith') && stats.samePerson('JA Smith', 'John Adam Smith')
   && stats.samePerson('J. A. Smith', 'John Adam Smith'), '完整姓名不会仅凭同姓同首字母误匹配，多字母缩写仍可识别');
 checkStats(stats.isLastAuthor('Y Hu, K Ding†', 'Kuiye Ding'), '完整列表末作兼容姓名缩写和作者标记');

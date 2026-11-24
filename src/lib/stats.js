@@ -2,26 +2,35 @@
 (function (root) {
   'use strict';
 
-  function cleanPersonName(value) {
-    return String(value || '')
+  function personNameWords(value) {
+    const clean = String(value || '')
       .normalize('NFKD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/\([^)]*\)|（[^）]*）/g, ' ')
       .replace(/\b(?:jr|sr|ii|iii|iv)\b\.?/gi, ' ')
-      .replace(/[^\p{L}\p{N}]+/gu, ' ')
-      .trim()
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
       .toLowerCase();
+    // 姓氏中的连字符保留词边界，不能把 Beaulieu-Jones 当成中间名 + Jones。
+    return clean.match(/[\p{L}\p{N}]+(?:-[\p{L}\p{N}]+)*/gu) || [];
+  }
+
+  function cleanPersonName(value) {
+    return personNameWords(value).join(' ').replace(/-/g, ' ');
   }
 
   function personSignatures(value) {
-    const clean = cleanPersonName(value);
-    const tokens = clean.split(/\s+/).filter(Boolean);
+    const tokens = personNameWords(value);
     if (!tokens.length) return [];
     const uppercaseInitials = new Set((String(value).match(/\b[A-Z]{2,4}\b/g) || []).map((token) => token.toLowerCase()));
-    const signature = (surname, given) => ({
-      compact: tokens.join(''), surname, given: given.join(''), initials: given.map((token) => token[0]).join(''),
-      abbreviated: given.length > 0 && given.every((token) => token.length === 1 || uppercaseInitials.has(token)),
-    });
+    const signature = (surname, givenWords) => {
+      // 连字符名字仍按各部分生成首字母，例如 Szu-Yu → SY。
+      const given = givenWords.flatMap((word) => word.split('-'));
+      return {
+        compact: tokens.join('').replace(/-/g, ''), surname: surname.replace(/-/g, ''),
+        given: given.join(''), initials: given.map((token) => token[0]).join(''),
+        abbreviated: given.length > 0 && given.every((token) => token.length === 1 || uppercaseInitials.has(token)),
+      };
+    };
     const signatures = [signature(tokens[tokens.length - 1], tokens.slice(0, -1))];
     if (tokens.length > 1) {
       signatures.push(signature(tokens[0], tokens.slice(1)));
@@ -31,23 +40,32 @@
 
   /**
    * Scholar 主页名经常把另一种写法放在括号里，例如
-   * "Jiawei Liu (刘嘉威)"。括号内容不是普通备注，而是可用于作者匹配的别名；
-   * 同时保留完整写法，避免改变已有的英文缩写匹配行为。
+   * "Jiawei Liu (刘嘉威)"；单独的西文旧姓则与名字组合，
+   * 例如 "Madeleine Torcasso (Durkee)" → "Madeleine Durkee"。
    */
   function nameVariants(value) {
     const raw = String(value || '').trim();
     if (!raw) return [];
 
     const variants = [raw];
+    const parenthetical = [];
     const withoutParentheses = raw
       .replace(/\(([^()]*)\)|（([^（）]*)）/g, (_match, ascii, fullWidth) => {
         const inner = String(ascii || fullWidth || '').trim();
-        if (inner) variants.push(inner);
+        if (inner) parenthetical.push(inner);
         return ' ';
       })
       .replace(/\s+/g, ' ')
       .trim();
     if (withoutParentheses && withoutParentheses !== raw) variants.push(withoutParentheses);
+    const words = withoutParentheses.split(/\s+/);
+    for (const inner of parenthetical) {
+      if (/^(?:ph\.?d\.?|md|msc|dr|prof(?:essor)?|emeritus|retired|jr|sr)$/i.test(inner)) continue;
+      const surnameOnly = /^\p{Lu}[\p{Ll}\p{M}]+(?:[-'’\u2010-\u2015]\p{Lu}[\p{Ll}\p{M}]+)*$/u.test(inner)
+        && words.length >= 2 && words.every((word) => /^[\p{Script=Latin}\p{M}.'’\-\u2010-\u2015]+$/u.test(word));
+      // 旧姓不作为独立别名，避免只凭同姓就把其他作者计入。
+      variants.push(surnameOnly ? [...words.slice(0, -1), inner].join(' ') : inner);
+    }
     return variants;
   }
 
@@ -98,10 +116,12 @@
     const right = personSignatures(b);
     if (!left.length || !right.length) return false;
     if (left[0].compact === right[0].compact) return true;
+    // 主页可能省略中间名：Brett ↔ BK、Madeleine ↔ MS；已给出的首字母必须一致。
+    const compatibleInitials = (x, y) => x.startsWith(y) || y.startsWith(x);
     return left.some((x) => right.some((y) => x.surname === y.surname && x.given && y.given && (
       x.given === y.given
-      || (x.abbreviated && (y.abbreviated ? y.given : y.initials).startsWith(x.given))
-      || (y.abbreviated && (x.abbreviated ? x.given : x.initials).startsWith(y.given))
+      || (x.abbreviated && compatibleInitials(x.given, y.abbreviated ? y.given : y.initials))
+      || (y.abbreviated && compatibleInitials(y.given, x.abbreviated ? x.given : x.initials))
     )));
   }
 
