@@ -2,6 +2,8 @@
 
 # 学术分级标注 · Scholar Rank
 
+[简体中文](README.md) | [English](README.en.md)
+
 **打开 Google Scholar，每篇论文下面直接标出期刊和会议的级别。**
 
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)
@@ -78,6 +80,9 @@
   被 Scholar 截断的出处也能认出来；实在拿不准时宁可不显示，也不瞎标。
 - **外观可选**。6 种风格（柔和填充 / 描边 / 实心 / 极简文字 / 方角标签 / 低调灰阶），
   每种徽章都能单独开关，字号可调。
+
+隐私与数据处理说明见 [Privacy Policy](docs/PRIVACY.md)。偏好设置使用浏览器的同步存储；
+开启浏览器同步时，这些设置（含手动填写的作者别名）可能由浏览器提供商同步到您的其他设备。
 
 ## 安装
 
