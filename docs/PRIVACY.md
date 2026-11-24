@@ -41,6 +41,8 @@ Executable code, ranking data, and the screenshot library are bundled with the e
 
 Scholar Rank has no developer-operated data-collection service, telemetry, analytics, or advertisements. It does not sell user data, share user data with advertisers or data brokers, or use page content for credit or lending decisions. Browser sync and requests to the sites described above remain subject to their respective providers' privacy practices.
 
+Scholar Rank's use of information received from Google APIs follows the Chrome Web Store User Data Policy, including its Limited Use requirements. Data is used only to provide the user-facing features described in this policy.
+
 ## Contact
 
 For questions about this policy or the extension, open an issue at [github.com/Day333/scholar-rank](https://github.com/Day333/scholar-rank/issues). If you choose to contact us, the information you submit is processed by GitHub under its privacy policy. Avoid including private profile information or credentials in public issues.
