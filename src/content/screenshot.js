@@ -3,8 +3,50 @@
   'use strict';
 
   let busy = false;
+  let stylesPromise = null;
+
+  function screenshotStyles() {
+    if (!stylesPromise) {
+      stylesPromise = fetch(chrome.runtime.getURL('src/content/badges.css'))
+        .then((response) => {
+          if (!response.ok) throw new Error('Could not prepare the screenshot. Reload the Scholar page and try again.');
+          return response.text();
+        }).catch((error) => {
+          stylesPromise = null;
+          throw error;
+        });
+    }
+    return stylesPromise;
+  }
+
+  function normalizeBadgeColors(target) {
+    // html2canvas 1.x 不认识 color-mix() 的 color(srgb ...) 计算结果。
+    // 只在截图副本中转为 rgba，保留原页面外观和描边的透明度。
+    const document = target.ownerDocument;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    const colors = new Map();
+    const properties = ['color', 'background-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'];
+    for (const badge of target.querySelectorAll('.sr-badge')) {
+      const style = document.defaultView.getComputedStyle(badge);
+      for (const property of properties) {
+        const color = style.getPropertyValue(property);
+        if (!/^(color|color-mix|lab|lch|oklab|oklch)\(/.test(color)) continue;
+        if (!colors.has(color)) {
+          context.clearRect(0, 0, 1, 1);
+          context.fillStyle = color;
+          context.fillRect(0, 0, 1, 1);
+          const [red, green, blue, alpha] = context.getImageData(0, 0, 1, 1).data;
+          colors.set(color, `rgba(${red}, ${green}, ${blue}, ${alpha / 255})`);
+        }
+        badge.style.setProperty(property, colors.get(color));
+      }
+    }
+  }
 
   async function screenshotBlob() {
+    const css = await screenshotStyles();
     const target = document.querySelector('#gsc_bdy') || document.body;
     const bounds = target.getBoundingClientRect();
     const width = Math.ceil(target === document.body
@@ -21,6 +63,13 @@
       useCORS: true, allowTaint: false, logging: false, imageTimeout: 5000,
       scrollX: 0, scrollY: 0,
       ignoreElements: (element) => element.matches('.sr-export-actions, .sr-export-status'),
+      onclone: (clonedDocument, clonedTarget) => {
+        // 浏览器注入的扩展 CSS 不在页面 DOM 中，html2canvas 克隆时不会带过去。
+        const style = clonedDocument.createElement('style');
+        style.textContent = css;
+        clonedDocument.head.appendChild(style);
+        normalizeBadgeColors(clonedTarget);
+      },
     });
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {

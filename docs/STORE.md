@@ -1,8 +1,8 @@
 # Chrome Web Store submission
 
-Version: 1.2.4
+Version: 1.2.5
 
-Publication status: Published on the Chrome Web Store.
+Publication status: Version 1.2.4 is published on the Chrome Web Store. Version 1.2.5 fixes screenshot annotations.
 
 Store listing: https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile
 
@@ -59,10 +59,12 @@ Dashboard data categories: Personally identifiable information (profile/author n
 
 ## Reviewer test instructions
 
-Yellow Argon fix: removed directory keyword lists from the manifest summary and store description. No login or payment is required. Open https://scholar.google.com/citations?user=2SvHNeQAAAAJ&hl=en or Scholar search results. Badges appear beside venues. On a profile, try Paper statistics: First, Last, Highlight author name, year filters and screenshot Copy/Download. Code and ranking data are bundled; page data stays local. Google may show its own CAPTCHA; this extension does not bypass it.
+No login or payment is required. Open https://scholar.google.com/citations?user=2SvHNeQAAAAJ&hl=en or Scholar search results. Badges appear beside venues. On a profile, try Paper statistics: First, Last, Highlight author name, year filters and Copy/Download screenshot. Version 1.2.5 preserves venue badges, author highlighting and statistics in both PNG exports, including papers below the viewport. Code and styles are bundled. Google may show its own CAPTCHA; this extension does not bypass it.
 
 Screenshot source: tools/store-assets.mjs renders the extension's local preview with example papers, at 1280 × 800 pixels. These are demonstrations of the shipped UI, not a claim about a live Scholar profile.
 
 ## Resubmission notes
 
 November 25, 2026: version 1.2.4 addresses rejection reference Yellow Argon. Removed the enumerated ranking-directory names from both the manifest short description and the store's Chinese description. The listing describes the user-facing features without keyword lists. Runtime code, permissions, and ranking datasets are unchanged.
+
+Version 1.2.5: restores bundled extension CSS in the screenshot's cloned document so exported PNGs retain badges, author highlights, filtering and statistics. Converts modern badge colors only in the screenshot copy for compatibility with the bundled renderer. No new permissions or remote code. Browser regression coverage checks the actual downloaded and clipboard PNGs with extension-style CSS outside the page DOM, all six badge themes, and papers below the viewport.

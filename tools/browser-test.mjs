@@ -1,7 +1,7 @@
 // 在隔离的浏览器配置中验证真实 content scripts，不使用用户浏览器资料。
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -18,6 +18,60 @@ assert.ok(executablePath, '请安装 Chrome / Edge，或通过 CHROME_PATH 指�
 await mkdir(output, { recursive: true });
 const port = Number(process.env.SR_TEST_PORT || 8129);
 const server = spawn(process.execPath, ['tools/serve.mjs', String(port)], { cwd: root, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true });
+
+async function checkScreenshotAnnotations(page, png, theme) {
+  const result = await page.evaluate(async ({ base64, theme }) => {
+    const target = document.querySelector('#gsc_bdy');
+    const bounds = target.getBoundingClientRect();
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.naturalWidth;
+    canvas.height = image.naturalHeight;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.drawImage(image, 0, 0);
+    const scale = canvas.width / Math.ceil(Math.max(bounds.width, target.scrollWidth));
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = colorCanvas.height = 1;
+    const colorContext = colorCanvas.getContext('2d');
+    const checks = [
+      ['first CCF badge', '#gsc_a_b tr:first-child .sr-ccf-a', ['outline', 'minimal'].includes(theme) ? 'color' : 'backgroundColor'],
+      ['last CCF badge', '#gsc_a_b tr:last-child .sr-ccf-a', ['outline', 'minimal'].includes(theme) ? 'color' : 'backgroundColor'],
+      ['author highlight', '#gsc_a_b tr:first-child .sr-author-name', 'backgroundColor'],
+      ['statistics', '.sr-stat-a', 'backgroundColor'],
+    ];
+    const regions = checks.map(([label, selector, property]) => {
+      const element = document.querySelector(selector);
+      const rect = element.getBoundingClientRect();
+      colorContext.fillStyle = '#ffffff';
+      colorContext.fillRect(0, 0, 1, 1);
+      colorContext.fillStyle = getComputedStyle(element)[property];
+      colorContext.fillRect(0, 0, 1, 1);
+      const expected = [...colorContext.getImageData(0, 0, 1, 1).data].slice(0, 3);
+      const x = Math.round((rect.left - bounds.left) * scale);
+      const y = Math.round((rect.top - bounds.top) * scale);
+      const width = Math.max(1, Math.floor(rect.width * scale));
+      const height = Math.max(1, Math.floor(rect.height * scale));
+      const inside = x >= 0 && y >= 0 && x + width <= canvas.width && y + height <= canvas.height;
+      let matches = 0;
+      if (inside) {
+        const pixels = context.getImageData(x, y, width, height).data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (expected.every((channel, c) => Math.abs(pixels[i + c] - channel) <= 2)) matches++;
+        }
+      }
+      return { label, expected, matches, inside };
+    });
+    return { height: canvas.height, viewport: innerHeight, regions };
+  }, { base64: png.toString('base64'), theme });
+  assert.ok(result.height > result.viewport, '长列表导出覆盖屏幕之外的论文');
+  for (const region of result.regions) {
+    assert.ok(region.inside && region.matches >= 4,
+      `${theme}: exported ${region.label} retains its visible styling: ${JSON.stringify(region)}`);
+  }
+}
+
 let browser;
 try {
   await new Promise((resolve, reject) => {
@@ -241,8 +295,68 @@ try {
     await checkbox('first').check();
     await checkbox('last').uncheck();
   }
+
+  // 扩展注入的 CSS 不在页面 DOM 中；普通 <link> 预览无法覆盖克隆时丢样式的问题。
+  const exportPage = await context.newPage();
+  exportPage.on('pageerror', (error) => errors.push(error.message));
+  await exportPage.setViewportSize({ width: 1440, height: 700 });
+  await exportPage.goto(`http://localhost:${port}/test/fixture.html`);
+  await exportPage.waitForSelector('.sr-highlight-metrics');
+  await exportPage.evaluate((css) => {
+    document.querySelector('link[href$="badges.css"]').remove();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    document.adoptedStyleSheets = [sheet];
+    const target = document.createElement('main');
+    target.id = 'gsc_bdy';
+    target.style.cssText = 'position:relative;width:1120px;margin:auto;';
+    for (const element of [...document.body.children]) {
+      if (element.tagName !== 'SCRIPT') target.append(element);
+    }
+    document.body.append(target);
+    document.body.style.maxWidth = 'none';
+    document.querySelectorAll('h1, p.note, #gs_res_ccl_mid').forEach((node) => { node.hidden = true; });
+    document.querySelector('#gsc_rsb').style.cssText = 'position:absolute;top:0;right:0;width:280px;';
+    document.querySelector('#gsc_a_b').style.width = '800px';
+    const tbody = document.querySelector('#gsc_a_b tbody');
+    tbody.replaceChildren();
+    for (let i = 0; i < 30; i++) {
+      const row = document.createElement('tr');
+      row.className = 'gsc_a_tr';
+      row.innerHTML = `<td class="gsc_a_t"><a class="gsc_a_at" href="/citations?citation_for_view=export:${i}">Screenshot regression paper ${i}</a><div class="gs_gray">K He, S Ren</div><div class="gs_gray">Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</div></td><td class="gsc_a_c">10</td><td class="gsc_a_y">2024</td>`;
+      tbody.append(row);
+    }
+  }, await readFile(root + '/src/content/badges.css', 'utf8'));
+  await exportPage.waitForFunction(() => document.querySelector('[data-stat="total"]')?.textContent === '30');
+  for (const theme of ['solid', 'soft', 'outline', 'minimal', 'square', 'mono']) {
+    await exportPage.evaluate((theme) => chrome.storage.sync.set({ theme }), theme);
+    await exportPage.waitForSelector(`.sr-badges.sr-theme-${theme}`);
+    const downloadPromise = exportPage.waitForEvent('download').catch(() => null);
+    await exportPage.locator('[data-export="download"]').click();
+    await exportPage.waitForFunction(() => {
+      const text = document.querySelector('.sr-export-status').textContent;
+      return text && text !== 'Generating screenshot…';
+    });
+    assert.equal(await exportPage.locator('.sr-export-status').textContent(), 'Screenshot downloaded.', `${theme} screenshot succeeds`);
+    const download = await downloadPromise;
+    assert.ok(download, `${theme} produces a PNG download`);
+    const path = `${output}/extension-styles-${theme}.png`;
+    await download.saveAs(path);
+    await checkScreenshotAnnotations(exportPage, await readFile(path), theme);
+  }
+  await exportPage.locator('[data-export="copy"]').click();
+  await exportPage.waitForFunction(() => document.querySelector('.sr-export-status').textContent.includes('Screenshot copied.'));
+  const clipboardPng = await exportPage.evaluate(async () => {
+    const items = await navigator.clipboard.read();
+    const blob = await items.find((item) => item.types.includes('image/png')).getType('image/png');
+    return [...new Uint8Array(await blob.arrayBuffer())];
+  });
+  await writeFile(output + '/extension-styles-clipboard.png', Buffer.from(clipboardPng));
+  await checkScreenshotAnnotations(exportPage, Buffer.from(clipboardPng), 'mono');
+  await exportPage.screenshot({ path: output + '/extension-styles-preview.png', fullPage: true });
+  await exportPage.close();
   assert.deepEqual(errors, [], '页面没有运行时异常');
-  console.log('浏览器验证通过：外国姓名、一作/末作、高亮、组合筛选、指标、动态加载、持久化、PNG 下载和剪贴板复制。');
+  console.log('浏览器验证通过：外国姓名、一作/末作、高亮、组合筛选、指标、动态加载、持久化，以及六种徽章风格的长列表 PNG 和剪贴板图片。');
   console.log(`预览与实际导出图片：${output}`);
 } finally {
   await browser?.close();

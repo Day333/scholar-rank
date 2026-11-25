@@ -1,6 +1,6 @@
 {
   "name": "scholar-rank",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "description": "Chrome 扩展：在 Google Scholar 页面显示期刊会议评级，提供作者识别、论文筛选与个人主页统计。",
   "type": "module",

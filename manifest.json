@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "学术分级标注 · Scholar Rank",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "在 Google Scholar 页面显示期刊会议评级，提供作者识别、论文筛选与个人主页统计。",
   "icons": {
     "16": "icons/icon16.png",
@@ -65,7 +65,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["src/data/*.json"],
+      "resources": ["src/data/*.json", "src/content/badges.css"],
       "matches": [
         "https://scholar.google.com/*",
         "https://scholar.google.com.hk/*",
