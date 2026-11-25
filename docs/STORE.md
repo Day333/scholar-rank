@@ -1,10 +1,12 @@
 # Chrome Web Store submission
 
-Version: 1.2.3
+Version: 1.2.4
 
 ## Listing
 
 Name: 学术分级标注 · Scholar Rank
+
+Short description: 在 Google Scholar 页面显示期刊会议评级，提供作者识别、论文筛选与个人主页统计。
 
 Language: Chinese (Simplified). The settings and many badge labels are Chinese; the profile statistics sidebar uses English.
 
@@ -16,25 +18,22 @@ Privacy policy: https://github.com/Day333/scholar-rank/blob/main/docs/PRIVACY.md
 
 ### Description
 
-在 Google Scholar 上直接查看期刊与会议评级，按作者角色筛选论文，并生成个人主页论文统计。
+在 Google Scholar 页面中查看期刊和会议评级，并按作者角色整理个人主页论文。
 
-Scholar Rank 会在个人主页、搜索结果、引用列表、相关文章和单篇详情中添加评级徽章，支持 CCF、CORE、中科院分区、JCR 影响因子、ABDC、ABS/AJG、UTD24、FT50、Nature Index 等目录。鼠标悬停可查看完整出处和评级信息。
+Scholar Rank 在论文出处旁添加评级徽章，鼠标悬停可查看匹配信息。个人主页的统计侧栏支持：
+• 识别第一作者、共同第一作者和末位作者，并高亮作者姓名。
+• 按发表年份、作者角色和评级筛选已加载的论文。
+• 汇总论文篇数、引用数及引用指标。
+• 连续加载论文，并将页面统计复制或下载为 PNG 图片。
 
-主要功能：
-• 期刊与会议评级徽章，支持动态加载的新条目。
-• 个人主页一作、共同一作和末作识别，以及作者姓名高亮。
-• 按发表年份、作者角色和评级组合筛选论文。
-• 统计当前加载论文与高亮论文的篇数、引用数、h-index 和 i10-index。
-• 连续加载全部论文，可随时停止。
-• 在本机生成 PNG 截图，复制到剪贴板或下载。
-• 六种徽章风格，可分别开关各类评级并调整字号。
+可在设置中调整徽章样式、字号和显示内容。界面以中文为主，统计侧栏使用英文。目录数据随扩展提供，评级仅供参考，正式评估请核对相应来源。
 
-评级数据和截图库随扩展打包，匹配与统计在本机完成，无需注册或 API Key。扩展不包含广告或分析追踪，不向开发者发送浏览数据。偏好设置使用浏览器同步存储，可能随浏览器账号同步。为补全无法识别的截断出处，扩展可向当前 Scholar 站点请求该条目的引用格式，可在设置中关闭。
+匹配、统计和截图在本机完成，无需注册。扩展没有广告或分析追踪，不向开发者发送页面数据。偏好设置可通过浏览器账号同步。可选的出处补全功能会向当前 Scholar 站点请求单篇论文的引用格式，可在设置中关闭。工具栏弹窗仅在打开时检查当前网址，以判断页面是否受支持。
 
-默认设置和部分徽章使用中文，统计侧栏使用英文。分区和评级是辅助信息，用于正式评估时请核对相应官方目录。商店截图展示的是使用示例论文的本地演示页面。
+商店截图展示使用示例论文的本地演示页面。使用说明和隐私政策见项目主页。
 
 English overview:
-Scholar Rank displays journal and conference rankings directly on Google Scholar and adds author highlighting, publication filters, citation metrics, and local PNG export. Ranking data is bundled; no account or API key is required. Settings and some badges are in Chinese, while the profile statistics sidebar uses English. Preferences may sync through your browser account. Optional requests to the current Scholar site recover truncated venue names. See the English README and privacy policy on the project homepage.
+View venue rankings beside papers on Google Scholar, filter a profile's publications and export local statistics as an image. Settings are mainly in Chinese; the statistics sidebar is in English. See the English README on the project homepage for details.
 
 ## Privacy fields
 
@@ -56,6 +55,10 @@ Dashboard data categories: Personally identifiable information (profile/author n
 
 ## Reviewer test instructions
 
-No extension account, payment, API key, or sign-in is required. Open a public Google Scholar profile such as https://scholar.google.com/citations?hl=en&user=2SvHNeQAAAAJ&view_op=list_works or a Scholar search results page. Venue badges appear automatically. On profiles, the Paper statistics sidebar includes author-role checkboxes, year filters, citation metrics, and screenshot controls. Toggle First (incl. co-first), Last, and Highlight author name to inspect the behavior. A truncated author list is deliberately not counted as last-author evidence. Screenshot copying is user initiated; Download screenshot is available if clipboard permission is denied. Google Scholar may independently rate-limit or present a CAPTCHA; the extension does not bypass these controls.
+Yellow Argon fix: removed directory keyword lists from the manifest summary and store description. No login or payment is required. Open https://scholar.google.com/citations?user=2SvHNeQAAAAJ&hl=en or Scholar search results. Badges appear beside venues. On a profile, try Paper statistics: First, Last, Highlight author name, year filters and screenshot Copy/Download. Code and ranking data are bundled; page data stays local. Google may show its own CAPTCHA; this extension does not bypass it.
 
 Screenshot source: tools/store-assets.mjs renders the extension's local preview with example papers, at 1280 × 800 pixels. These are demonstrations of the shipped UI, not a claim about a live Scholar profile.
+
+## Resubmission notes
+
+November 25, 2026: version 1.2.4 addresses rejection reference Yellow Argon. Removed the enumerated ranking-directory names from both the manifest short description and the store's Chinese description. The listing describes the user-facing features without keyword lists. Runtime code, permissions, and ranking datasets are unchanged.
