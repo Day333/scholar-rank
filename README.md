@@ -4,161 +4,38 @@
 
 [简体中文](README.md) | [English](README.en.md)
 
-**打开 Google Scholar，每篇论文下面直接标出期刊和会议的级别。**
+**在 Google Scholar 上查看期刊会议评级，筛选论文并生成个人主页统计。**
 
 **[免费安装 · Chrome 应用商店](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)**
 
-![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)
-![Chrome | Edge](https://img.shields.io/badge/Chrome%20%7C%20Edge-支持-34A853)
-![数据](https://img.shields.io/badge/数据-全离线·不联网-6E56CF)
-![免配置](https://img.shields.io/badge/无需注册-无需%20API%20Key-orange)
-
 ![效果预览](docs/preview.png)
-
-<sub>示意图中的论文均为真实论文，被引次数取自 Semantic Scholar（2026-07-28）</sub>
 
 </div>
 
-## 这是什么
+## 主要功能
 
-看别人（或者自己）的 Google Scholar 主页时，一眼分不清哪篇是顶会顶刊、哪篇是水刊。
-这个扩展会在每篇论文的作者行下面插一排徽章，把级别直接标出来：
+- **评级徽章**：在个人主页、搜索结果等页面标注期刊会议级别，鼠标悬停可查看详情。
+- **作者识别**：识别第一作者、共同第一作者和末位作者，支持姓名高亮。
+- **论文筛选**：按发表年份、作者角色和评级组合筛选。
+- **统计与截图**：汇总已加载论文的篇数、引用数、h-index 和 i10-index，复制或下载统计截图。
+- **外观设置**：切换徽章风格、调整字号，单独开关各类标注。
 
-| 徽章 | 含义 |
-| --- | --- |
-| `ML三大顶会` `数据库四大` | 自定义标记，命中后排在最前面，可自己增删 |
-| `CCF A/B/C` | CCF 推荐国际学术会议和期刊目录（第七版，2026） |
-| `CORE A*/A/B/C` | 澳大利亚 CORE 会议分级（ICORE2026） |
-| `ABDC A*` `ABS 4*` `AJG 2024 4*` | ABDC 2025、ABS/AJG 2021 和 AJG 2024 商科期刊评级 |
-| `UTD24` `FT50` | UT Dallas 24 和 Financial Times 50 商科期刊目录 |
-| `国自然管理学部 A/B` | 国家自然科学基金委管理科学部认定的重要期刊 |
-| `UTD24+Econ5` | UTD24 与经济学五大刊的合并标记 |
-| `Nature Index 2026` | Nature Index 2026 的 177 种统计期刊 |
-| `计算机科学TOP` | 中科院分区表升级版的 TOP 期刊 |
-| `EI检索` | 被 EI Compendex 收录 |
-| `SCI升级版 计算机科学1区` | 中科院分区表升级版的大类分区 |
-| `IF 8.7` | JCR 影响因子（另可开启 JCR 分区 Q1–Q4） |
-| `预警 论文工厂` | 中科院国际期刊预警名单 |
-| `arXiv` `bioRxiv` | 预印本，提示这篇还没经过同行评审 |
+## 安装与使用
 
-鼠标悬停在徽章上能看到完整信息：会议全称、所属领域、小类分区、收录库等。
-预印本会标出所在平台（arXiv / bioRxiv / medRxiv / SSRN …）但不参与分级；学位论文、专利则直接跳过。
+1. 打开 [Chrome 应用商店](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)，点击「添加至 Chrome」。
+2. 打开 Google Scholar 个人主页或搜索结果页，徽章会自动出现；点击工具栏扩展图标可调整设置。
 
-**个人主页、搜索结果页、引用列表、相关文章、单篇论文详情浮层都会标注**，
-翻页或点「显示更多」新加载的条目会自动补上。
-个人主页右侧的引用信息栏还会显示论文统计，汇总当前已加载论文中的 CCF A/B/C、中科院 1–4 区和一作数量；
-点击任一分类即可筛选论文，再点一次恢复全部。统计区可以自动连续点击 Scholar 的「显示更多」来加载完整列表，
-并显示进度、支持随时停止；一作识别默认使用主页姓名，也可以在设置中逐行添加姓名别名，
-开头连续用 `*`、`#`、`†` 或 `‡` 标注的作者会按共同一作统计；主页姓名括号内的中英文别名也会自动参与匹配。
-姓名匹配支持 `Beaulieu-Jones` 这类连字符姓氏，以及主页省略中间名时的作者缩写（如 `Brett` 对应 `BK`）；
-`Madeleine Torcasso (Durkee)` 这类括号旧姓会自动组合成 `Madeleine Durkee`，用于一作、末作统计和姓名高亮。
+无需注册或 API Key。Edge 和源码安装方式见 [手动安装](docs/USAGE.md#手动安装)。界面以中文为主，统计侧栏使用英文。
 
-### 作者高亮与截图（1.2.0）
+评级匹配、统计和截图在本机完成；设置可能通过浏览器账号同步，可选的出处补全会请求当前 Scholar 站点。详见 [隐私政策](docs/PRIVACY.md)。
 
-个人主页右侧「Paper statistics」中可以勾选 **First (incl. co-first)** 和 **Last**，对应论文显示浅黄色底色；
-「Highlight author name」可单独开关。完整作者列表的最后一位计为末作；包含 `…`、`...` 或 `et al.` 的截断列表不判定末作，
-侧栏会提示这类论文的数量。单作者论文可同时命中一作和末作，统计只计一次。
+## 详细说明
 
-- **组合筛选**：选择开始、结束年份，或点击 CCF / 中科院分类；勾选「Show only highlighted papers」隐藏其余论文。
-  角色之间取并集，角色、年份与分类之间取交集；限制年份时不包含年份缺失的条目。「Reset」清除年份范围。
-- **高亮论文指标**：实时显示论文数、引用数、h-index、i10-index，并与当前已加载论文的指标对比。
-  年份筛选针对论文发表年份，引用数使用这些论文当前的累计引用。指标基于已加载条目；点击「Load all papers」取得完整列表后再查看完整统计。
-  Scholar 已划线的重复引用不重复计入引用指标。
-- **截图复制、下载**：点击「Copy screenshot」后可粘贴 PNG，或点击「Download screenshot」保存图片。
-  截图包含当前筛选结果和右侧统计，在本机生成；截图库已打包，无需安装依赖。浏览器不允许复制时可使用下载。
-  列表过长时可先缩小年份范围或仅显示高亮论文。
+[使用指南](docs/USAGE.md) · [徽章与数据来源](docs/DATA.md) · [隐私政策](docs/PRIVACY.md) · [开发说明](docs/DEVELOPMENT.md)
 
-角色、年份和显示选项按主页保留在当前标签页中，刷新仍保留。截图复制使用扩展的 `clipboardWrite` 权限。
-已有安装升级后，请在浏览器扩展管理页重新加载扩展，再刷新 Scholar 页面。
+## 反馈与贡献
 
-几个特点：
+这是一个免费扩展，欢迎多 [提 issue](https://github.com/Day333/scholar-rank/issues)，反馈漏标、误标、作者识别问题或功能建议，一起把它完善。
+请附上相关页面链接、出处或作者原文，以及预期和实际结果；截图也很有帮助。
 
-- **全离线**。所有数据都打包在扩展里，不上传任何浏览数据，也不需要注册或 API Key。
-  唯一会发出的请求是向 Scholar 自己：搜索结果里出处被截成 `Information …` 又认不出时，
-  取一次该条目的「引用」格式来拿完整刊名（相当于替你点了「引用」），可在设置里关掉。
-- **匹配够扎实**。Google Scholar 的出处写法极不统一（`Journal of machine learning research 12, 2825-2830`、
-  `ICASSP 2015-2015 IEEE International Conference on Acoustics, Speech and …`、
-  `Proceedings of the ACM on Management of Data`），扩展会剥掉卷期页码和各种前后缀再匹配，
-  被 Scholar 截断的出处也能认出来；实在拿不准时宁可不显示，也不瞎标。
-- **外观可选**。6 种风格（柔和填充 / 描边 / 实心 / 极简文字 / 方角标签 / 低调灰阶），
-  每种徽章都能单独开关，字号可调。
-
-隐私与数据处理说明见 [Privacy Policy](docs/PRIVACY.md)。偏好设置使用浏览器的同步存储；
-开启浏览器同步时，这些设置（含手动填写的作者别名）可能由浏览器提供商同步到您的其他设备。
-
-## 安装
-
-### 从 Chrome 应用商店安装
-
-扩展已正式上架，**免费使用**。打开 [Chrome 应用商店页面](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)，点击「添加至 Chrome」即可安装。
-安装后打开 Google Scholar 个人主页或搜索结果页，徽章会自动出现。
-
-欢迎试用，也欢迎到 [Issues](https://github.com/Day333/scholar-rank/issues) 反馈问题、分享建议，一起完善这个免费的扩展。
-
-### 手动安装（开发者模式）
-
-也可以从源码加载：
-
-1. **下载并解压**——点仓库右上角绿色的 `Code → Download ZIP`，解压出一个文件夹。
-
-2. **打开扩展管理页**——Chrome 是 `chrome://extensions/`，Edge 是 `edge://extensions/`。
-
-3. **打开右上角的「开发者模式」开关**（不打开的话拖进去没反应）。
-
-4. **把解压出来的文件夹直接拖到这个页面上**，松手即安装完成。
-
-5. 打开任意 Google Scholar 页面，例如个人主页 `scholar.google.com/citations?user=XXXX`
-   或搜索结果页，徽章会自动出现。
-
-> [!TIP]
-> - **要拖文件夹，不是拖 ZIP。** 浏览器只认解压后的目录，压缩包拖进去不会有反应。
-> - 拖进去的那一层必须**直接包含 `manifest.json`**。GitHub 的 ZIP 解压后一般是
->   `scholar-rank-main/`，拖它就对了；如果解压出来还套了一层，就往里进一层再拖。
-> - 数据文件已经随仓库提供，**装完即用**，不需要执行任何构建命令。
-> - 装好后别删掉这个文件夹，浏览器是直接从原地加载的。以后更新代码，回到扩展管理页
->   点一下卡片上的刷新按钮即可。
-
-习惯命令行的话，`git clone` 下来再拖同一个文件夹也行。
-
-支持 `scholar.google.*` 的常见国家域名，以及 `xueshu.lanfanshu.cn`、`sc.panda985.com` 等常用镜像。
-
-## 设置
-
-点击浏览器工具栏上的扩展图标可以快速开关、切换外观风格；点「打开设置」进入完整设置页，
-可以逐个开关徽章、调整字号、添加一作姓名别名、查看当前打包的数据版本。
-
-设置页还带一个**匹配自测**框：把 Scholar 上的出处原文粘进去，立刻能看到它命中了哪条记录、
-走的是哪条匹配路径——遇到没标上的论文，用这个排查最快。
-
-## 数据来源
-
-| 数据 | 来源 |
-| --- | --- |
-| CCF 推荐目录 2026（第七版） | [ccf.atom.im](https://ccf.atom.im/) ｜ [官方原文](https://www.ccf.org.cn/Academic_Evaluation/By_category/) |
-| CORE Conference Rankings（ICORE2026） | [portal.core.edu.au](https://portal.core.edu.au/conf-ranks/) |
-| 中科院分区表升级版 2025、JCR 2025、国际期刊预警名单 2025 | [hitfyd/ShowJCR](https://github.com/hitfyd/ShowJCR) |
-| EI Compendex Source List | [HiddenStrawberry/EI-COMPENDEX-SOURCE-LIST](https://github.com/HiddenStrawberry/EI-COMPENDEX-SOURCE-LIST) |
-| ABDC Journal Quality List 2025 | [ABDC 官方目录](https://abdc.edu.au/abdc-journal-quality-list/) ｜ [公开结构化数据](https://github.com/P-M-Ferreira/ranking/tree/main/journal-ranking-app/data) |
-| ABS / Academic Journal Guide 2021、AJG 2024 | [Chartered ABS AJG](https://charteredabs.org/academic-journal-guide-2024/) ｜ [公开结构化数据](https://github.com/jusi-aalto/biz-journals) |
-| UTD24、FT50 | [UT Dallas 官方目录](https://jsom.utdallas.edu/the-utd-top-100-business-school-research-rankings/index.php) ｜ [FT50 结构化数据](https://github.com/jusi-aalto/biz-journals) |
-| 国家自然科学基金委管理科学部重要期刊 | [目录原文镜像](https://static.hhkaobo.com/upload/editor/72f47437-e6ba-4df1-8740-f48d95f519f6.pdf) |
-| Nature Index 2026 | [Nature Index 官方 FAQ 与期刊目录](https://www.nature.com/nature-index/faq) |
-
-感谢以上项目的整理工作。分区与影响因子数据归各自版权方所有，本项目只做离线聚合与展示。
-
-⚠️ 匹配基于刊名字符串，个别同名、改名、新刊可能匹配不到或匹配错；EI 目录是目前公开可得的最新完整版本（2019），
-只能当参考。**用于职称评定、学位审核等正式场合时，请务必以官方发布为准并自行核对。**
-
-## 参与贡献
-
-这是一个免费扩展，欢迎大家多提 issue，帮助它覆盖更多真实使用场景。
-发现漏标、误标、作者识别问题，或者有功能建议、体验反馈，都欢迎分享：
-
-- 🐛 [提 Issue](https://github.com/Day333/scholar-rank/issues) —— 请附上相关页面链接、**出处或作者原文**，以及预期和实际结果；
-  有截图也欢迎补充，方便复现。出处原文可从设置页的「匹配自测」框中复制。
-- 🔧 [提 PR](../../pulls) —— 补别名、加标记分组、修 Bug、加新网站支持都欢迎。
-  大部分漏标只要往 `src/data/aliases.json` 补一行就能修好，不用动代码；
-  改完跑一下 `npm test`；高亮、筛选和截图交互可执行 `npm run test:browser`。细节见
-  [开发说明](docs/DEVELOPMENT.md)。
-
-如果觉得好用，点个 ⭐ 就是最大的支持。
+也欢迎 [提交 PR](https://github.com/Day333/scholar-rank/pulls)。
