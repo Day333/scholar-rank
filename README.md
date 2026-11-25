@@ -6,6 +6,8 @@
 
 **打开 Google Scholar，每篇论文下面直接标出期刊和会议的级别。**
 
+**[免费安装 · Chrome 应用商店](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)**
+
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)
 ![Chrome | Edge](https://img.shields.io/badge/Chrome%20%7C%20Edge-支持-34A853)
 ![数据](https://img.shields.io/badge/数据-全离线·不联网-6E56CF)
@@ -86,7 +88,16 @@
 
 ## 安装
 
-还没上架应用商店，用开发者模式加载，一分钟搞定：
+### 从 Chrome 应用商店安装
+
+扩展已正式上架，**免费使用**。打开 [Chrome 应用商店页面](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)，点击「添加至 Chrome」即可安装。
+安装后打开 Google Scholar 个人主页或搜索结果页，徽章会自动出现。
+
+欢迎试用，也欢迎到 [Issues](https://github.com/Day333/scholar-rank/issues) 反馈问题、分享建议，一起完善这个免费的扩展。
+
+### 手动安装（开发者模式）
+
+也可以从源码加载：
 
 1. **下载并解压**——点仓库右上角绿色的 `Code → Download ZIP`，解压出一个文件夹。
 
@@ -140,10 +151,11 @@
 
 ## 参与贡献
 
-发现某篇论文没标上、标错了，或者想加新的分级体系、新的自定义标记，都非常欢迎：
+这是一个免费扩展，欢迎大家多提 issue，帮助它覆盖更多真实使用场景。
+发现漏标、误标、作者识别问题，或者有功能建议、体验反馈，都欢迎分享：
 
-- 🐛 [提 Issue](../../issues) —— 请把 Scholar 上那条**出处原文**贴上（设置页的「匹配自测」框里可以直接复制），
-  这样最容易定位问题。
+- 🐛 [提 Issue](https://github.com/Day333/scholar-rank/issues) —— 请附上相关页面链接、**出处或作者原文**，以及预期和实际结果；
+  有截图也欢迎补充，方便复现。出处原文可从设置页的「匹配自测」框中复制。
 - 🔧 [提 PR](../../pulls) —— 补别名、加标记分组、修 Bug、加新网站支持都欢迎。
   大部分漏标只要往 `src/data/aliases.json` 补一行就能修好，不用动代码；
   改完跑一下 `npm test`；高亮、筛选和截图交互可执行 `npm run test:browser`。细节见

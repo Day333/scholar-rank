@@ -6,6 +6,8 @@
 
 **See journal and conference rankings directly alongside papers on Google Scholar.**
 
+**[Install for free · Chrome Web Store](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)**
+
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-4285F4)
 ![Chrome and Edge](https://img.shields.io/badge/Chrome%20%7C%20Edge-supported-34A853)
 ![Bundled data](https://img.shields.io/badge/Ranking%20data-bundled-6E56CF)
@@ -55,6 +57,14 @@ Role, year, and display selections are retained for each profile in the current 
 
 ## Installation
 
+### Chrome Web Store
+
+Scholar Rank is now published on the **[Chrome Web Store](https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile)** and is **free to use**. Open the listing, click **Add to Chrome**, then visit a supported Google Scholar profile or search results page.
+
+Please share bugs, suggestions, and feedback in [Issues](https://github.com/Day333/scholar-rank/issues) to help improve this free extension.
+
+### Manual installation
+
 For a manual installation in Chrome or Edge:
 
 1. Download the repository using **Code → Download ZIP**, then extract it. A Git clone works too.
@@ -103,7 +113,9 @@ Matching is based on venue names and can miss or misidentify renamed, ambiguous,
 
 ## Contributing
 
-- [Report a bug](https://github.com/Day333/scholar-rank/issues): include the exact venue or author text shown by Scholar, the affected page, and the expected result.
+Scholar Rank is free to use. Bug reports, feature suggestions, and feedback help improve it across real-world use cases. Everyone is welcome to [open an issue](https://github.com/Day333/scholar-rank/issues).
+
+- [Report a bug](https://github.com/Day333/scholar-rank/issues): include the exact venue or author text shown by Scholar, the affected page, and the expected and actual results. Screenshots are helpful too.
 - [Send a pull request](https://github.com/Day333/scholar-rank/pulls): matching fixes often need only an entry in `src/data/aliases.json`. Custom groups live in `src/data/tags.json`.
 
 ```sh

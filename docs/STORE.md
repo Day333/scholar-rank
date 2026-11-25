@@ -2,6 +2,10 @@
 
 Version: 1.2.4
 
+Publication status: Published on the Chrome Web Store.
+
+Store listing: https://chromewebstore.google.com/detail/pjeccpgooejgnnbcjickjcgoamnghile
+
 ## Listing
 
 Name: 学术分级标注 · Scholar Rank
